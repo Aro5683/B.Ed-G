@@ -1,5 +1,4 @@
-// Increment this version string (e.g., v1 -> v2) every time you deploy major updates
-const CACHE_NAME = 'eduportal-v2';
+const CACHE_NAME = 'eduportal-dynamic-v1';
 
 // Static assets to pre-cache for full offline rendering
 const ASSETS_TO_CACHE = [
@@ -13,66 +12,76 @@ const ASSETS_TO_CACHE = [
 
 // Install Event: Pre-cache static assets
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force active worker activation immediately
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting()) // Force active worker activation immediately
+    })
   );
 });
 
-// Activate Event: Delete old caches instantly
+// Activate Event: Take control of clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('Clearing old cache:', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim()) // Take control of all open pages immediately
+    Promise.all([
+      self.clients.claim(),
+      // Delete any outdated legacy caches if present
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cache) => {
+            if (cache !== CACHE_NAME) {
+              return caches.delete(cache);
+            }
+          })
+        );
+      })
+    ])
   );
 });
 
-// Fetch Event: Network-First for HTML/App Shell, Cache-First for static assets
+// Fetch Event: Network-First with Cache-Busting for HTML, Cache-First for assets
 self.addEventListener('fetch', (event) => {
   // Pass-through for OPFS blobs and Worker API proxies
   if (event.request.url.includes('workers.dev') || event.request.url.startsWith('blob:')) {
     return;
   }
 
-  const isHtmlRequest = event.request.mode === 'navigate' || event.request.url.endsWith('index.html');
+  const isHtmlRequest = event.request.mode === 'navigate' || 
+                        event.request.headers.get('accept')?.includes('text/html') || 
+                        event.request.url.endsWith('index.html');
 
   if (isHtmlRequest) {
-    // NETWORK-FIRST STRATEGY FOR INDEX.HTML
+    // NETWORK-FIRST WITH CACHE-BUSTING FOR INDEX.HTML
     event.respondWith(
-      fetch(event.request)
+      // Append timestamp to prevent HTTP browser caching of the HTML file
+      fetch(new Request(event.request.url, { cache: 'no-store' }))
         .then((networkResponse) => {
-          // If online, fetch updated index.html and update cache in background
           if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
+              // Update both the exact URL and base path in offline cache
+              cache.put('./index.html', responseClone.clone());
+              cache.put('./', responseClone);
             });
           }
           return networkResponse;
         })
         .catch(() => {
-          // If offline, serve cached index.html
-          return caches.match('./index.html') || caches.match('./');
+          // If offline, fall back to cached index.html or root
+          return caches.match('./index.html').then((cachedFile) => {
+            return cachedFile || caches.match('./');
+          });
         })
     );
   } else {
-    // CACHE-FIRST STRATEGY FOR OTHER ASSETS (Fonts, CSS, Icons)
+    // CACHE-FIRST STRATEGY FOR OTHER ASSETS
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse;
         }
         return fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseClone);
