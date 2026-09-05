@@ -16,7 +16,7 @@
     <!-- CSS & Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-   
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
@@ -85,6 +85,42 @@
 
     <!-- Container: Full screen on mobile, styled container on desktop -->
     <div id="app" class="relative w-full h-full sm:h-[92vh] max-w-md mx-auto bg-warm-main shadow-2xl flex flex-col overflow-hidden sm:rounded-[40px] border-0 sm:border border-stone-200">
+
+<!-- PWA ENFORCEMENT & INSTALLATION OVERLAY -->
+<div id="pwa-install-overlay" class="fixed inset-0 z-50 bg-warm-main flex flex-col items-center justify-between p-8 text-center">
+    
+    <!-- App Branding -->
+    <div class="my-auto space-y-6 flex flex-col items-center w-full max-w-xs">
+        <div class="w-24 h-24 rounded-3xl bg-warm-dark text-white flex items-center justify-center shadow-xl border-4 border-white">
+            <i class="fa-solid fa-graduation-cap text-4xl text-warm-accent"></i>
+        </div>
+
+        <div class="space-y-2">
+            <h1 class="text-2xl font-black text-warm-dark tracking-tight">EduPortal App</h1>
+            <p class="text-xs text-warm-muted leading-relaxed">
+                Access verified study materials, semester Q&A, and campus circulars offline.
+            </p>
+        </div>
+
+        <!-- Dynamic Install / Timer Action Area -->
+        <div id="pwa-action-box" class="w-full pt-4 space-y-3">
+            <button id="pwa-install-btn" onclick="triggerPwaInstall()" class="w-full py-4 rounded-2xl bg-warm-dark hover:bg-stone-800 text-white font-black text-xs tracking-widest uppercase transition-all shadow-lg flex items-center justify-center gap-2">
+                <i class="fa-solid fa-download text-sm"></i>
+                <span>Install App</span>
+            </button>
+
+            <p id="pwa-instructions" class="text-[11px] text-warm-muted font-medium">
+                Click Install to enable full offline webapp features.
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer Lock Notice -->
+    <p id="pwa-footer-msg" class="text-[10px] text-warm-muted font-semibold tracking-wide">
+        STRICT ACCESS: Web app features are available only inside the installed app.
+    </p>
+</div>
+
 
         <!-- SCREEN: BENEFITS / WELCOME -->
         <div id="screen-benefits" class="flex-1 flex flex-col justify-between p-6 overflow-y-auto relative">
@@ -1190,7 +1226,103 @@
     function toggleModal(id, show) {
         document.getElementById(id).classList.toggle('hidden', !show);
     }
+
+let deferredPrompt = null;
+let installTimer = null;
+
+// 1. Listen for PWA installation prompt capture
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+});
+
+// 2. Check standalone state on initial load
+window.addEventListener('DOMContentLoaded', () => {
+    checkPWAEnforcement();
+});
+
+function isStandalonePWA() {
+    return window.matchMedia('(display-mode: standalone)').matches || 
+           window.navigator.standalone === true;
+}
+
+function checkPWAEnforcement() {
+    const isInstalledAlready = localStorage.getItem('pwa_installed_strictly') === 'true';
+    const overlay = document.getElementById('pwa-install-overlay');
+    const actionBox = document.getElementById('pwa-action-box');
+    const footerMsg = document.getElementById('pwa-footer-msg');
+
+    // IF USER IS INSIDE BROWSER: Block Features strictly
+    if (!isStandalonePWA()) {
+        if (overlay) overlay.classList.remove('hidden');
+
+        if (isInstalledAlready) {
+            // User registered/installed previously, but opened site inside browser
+            actionBox.innerHTML = `
+                <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900 space-y-2">
+                    <i class="fa-solid fa-mobile-screen-button text-2xl text-amber-700"></i>
+                    <p class="text-xs font-bold">App Already Installed!</p>
+                    <p class="text-[11px] leading-relaxed">
+                        You have already installed EduPortal. You cannot use features inside the browser. Please open the installed app from your phone home screen.
+                    </p>
+                </div>`;
+            footerMsg.innerText = "STRICTLY RESTRICTED: Open via Installed App Icon.";
+        }
+    } else {
+        // USER IS INSIDE STANDALONE PWA: Mark installed & allow app usage
+        localStorage.setItem('pwa_installed_strictly', 'true');
+        if (overlay) overlay.classList.add('hidden');
+    }
+}
+
+// 3. Handle Installation & 30-Second Timer Flow
+async function triggerPwaInstall() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+    }
+
+    start30SecondTimer();
+}
+
+function start30SecondTimer() {
+    const actionBox = document.getElementById('pwa-action-box');
+    let timeLeft = 30;
+
+    actionBox.innerHTML = `
+        <div class="p-4 bg-white rounded-2xl border border-stone-200 shadow-sm space-y-3">
+            <div class="spinner mx-auto"></div>
+            <p id="timer-count-text" class="text-xs font-extrabold text-warm-dark">
+                Installing App... (${timeLeft}s)
+            </p>
+            <p class="text-[10px] text-warm-muted">
+                Please wait while we finalize offline standalone setup.
+            </p>
+        </div>`;
+
+    installTimer = setInterval(() => {
+        timeLeft--;
+        const timerText = document.getElementById('timer-count-text');
+        if (timerText) timerText.innerText = `Installing App... (${timeLeft}s)`;
+
+        if (timeLeft <= 0) {
+            clearInterval(installTimer);
+            localStorage.setItem('pwa_installed_strictly', 'true');
+            
+            actionBox.innerHTML = `
+                <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-900 space-y-2">
+                    <i class="fa-solid fa-circle-check text-2xl text-emerald-600"></i>
+                    <p class="text-xs font-bold">Successfully Installed!</p>
+                    <p class="text-[11px] leading-relaxed">
+                        You can use app features inside the app. You cannot use features in this site inside the browser. Please close browser and open the App from home screen.
+                    </p>
+                </div>`;
+        }
+    }, 1000);
+}
 </script>
+
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
