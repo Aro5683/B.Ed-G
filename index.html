@@ -1227,108 +1227,114 @@
         document.getElementById(id).classList.toggle('hidden', !show);
     }
 
-let deferredPrompt = null;
-let installTimer = null;
 
-// 1. Listen for PWA installation prompt capture
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-});
+    let deferredPrompt = null;
+    let installTimer = null;
 
-// 2. Check standalone state on initial load
-window.addEventListener('DOMContentLoaded', () => {
-    checkPWAEnforcement();
-});
+    // Capture the PWA install prompt before browser shows standard banner
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
 
-function isStandalonePWA() {
-    return window.matchMedia('(display-mode: standalone)').matches || 
-           window.navigator.standalone === true;
-}
+    // Run enforcement and SW registration on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+        checkPWAEnforcement();
+        registerServiceWorker();
+    });
 
-function checkPWAEnforcement() {
-    const isInstalledAlready = localStorage.getItem('pwa_installed_strictly') === 'true';
-    const overlay = document.getElementById('pwa-install-overlay');
-    const actionBox = document.getElementById('pwa-action-box');
-    const footerMsg = document.getElementById('pwa-footer-msg');
-
-    // IF USER IS INSIDE BROWSER: Block Features strictly
-    if (!isStandalonePWA()) {
-        if (overlay) overlay.classList.remove('hidden');
-
-        if (isInstalledAlready) {
-            // User registered/installed previously, but opened site inside browser
-            actionBox.innerHTML = `
-                <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900 space-y-2">
-                    <i class="fa-solid fa-mobile-screen-button text-2xl text-amber-700"></i>
-                    <p class="text-xs font-bold">App Already Installed!</p>
-                    <p class="text-[11px] leading-relaxed">
-                        You have already installed EduPortal. You cannot use features inside the browser. Please open the installed app from your phone home screen.
-                    </p>
-                </div>`;
-            footerMsg.innerText = "STRICTLY RESTRICTED: Open via Installed App Icon.";
-        }
-    } else {
-        // USER IS INSIDE STANDALONE PWA: Mark installed & allow app usage
-        localStorage.setItem('pwa_installed_strictly', 'true');
-        if (overlay) overlay.classList.add('hidden');
-    }
-}
-
-// 3. Handle Installation & 30-Second Timer Flow
-async function triggerPwaInstall() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        deferredPrompt = null;
+    // Check if app running inside installed standalone window
+    function isStandalonePWA() {
+        return window.matchMedia('(display-mode: standalone)').matches || 
+               window.navigator.standalone === true;
     }
 
-    start30SecondTimer();
-}
+    // Strict Access Enforcement Rules
+    function checkPWAEnforcement() {
+        const isInstalledAlready = localStorage.getItem('pwa_installed_strictly') === 'true';
+        const overlay = document.getElementById('pwa-install-overlay');
+        const actionBox = document.getElementById('pwa-action-box');
+        const footerMsg = document.getElementById('pwa-footer-msg');
 
-function start30SecondTimer() {
-    const actionBox = document.getElementById('pwa-action-box');
-    let timeLeft = 30;
+        if (!isStandalonePWA()) {
+            // OPENED IN BROWSER: Block app features strictly
+            if (overlay) overlay.classList.remove('hidden');
 
-    actionBox.innerHTML = `
-        <div class="p-4 bg-white rounded-2xl border border-stone-200 shadow-sm space-y-3">
-            <div class="spinner mx-auto"></div>
-            <p id="timer-count-text" class="text-xs font-extrabold text-warm-dark">
-                Installing App... (${timeLeft}s)
-            </p>
-            <p class="text-[10px] text-warm-muted">
-                Please wait while we finalize offline standalone setup.
-            </p>
-        </div>`;
-
-    installTimer = setInterval(() => {
-        timeLeft--;
-        const timerText = document.getElementById('timer-count-text');
-        if (timerText) timerText.innerText = `Installing App... (${timeLeft}s)`;
-
-        if (timeLeft <= 0) {
-            clearInterval(installTimer);
+            if (isInstalledAlready && actionBox && footerMsg) {
+                actionBox.innerHTML = `
+                    <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900 space-y-2 text-center">
+                        <i class="fa-solid fa-mobile-screen-button text-2xl text-amber-700"></i>
+                        <p class="text-xs font-bold">App Already Installed!</p>
+                        <p class="text-[11px] leading-relaxed">
+                            You have already installed EduPortal. You cannot use features inside the browser. Please open the installed app from your home screen.
+                        </p>
+                    </div>`;
+                footerMsg.innerText = "STRICTLY RESTRICTED: Open via Installed App Icon.";
+            }
+        } else {
+            // OPENED INSIDE APP: Mark as installed & reveal app canvas
             localStorage.setItem('pwa_installed_strictly', 'true');
-            
-            actionBox.innerHTML = `
-                <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-900 space-y-2">
-                    <i class="fa-solid fa-circle-check text-2xl text-emerald-600"></i>
-                    <p class="text-xs font-bold">Successfully Installed!</p>
-                    <p class="text-[11px] leading-relaxed">
-                        You can use app features inside the app. You cannot use features in this site inside the browser. Please close browser and open the App from home screen.
-                    </p>
-                </div>`;
+            if (overlay) overlay.classList.add('hidden');
         }
-    }, 1000);
-}
-</script>
+    }
 
-    <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
+    // Triggered when user clicks Install App button
+    async function triggerPwaInstall() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+        }
+        start30SecondTimer();
+    }
+
+    // 30-Second Timer Flow
+    function start30SecondTimer() {
+        const actionBox = document.getElementById('pwa-action-box');
+        let timeLeft = 30;
+
+        if (!actionBox) return;
+
+        actionBox.innerHTML = `
+            <div class="p-4 bg-white rounded-2xl border border-stone-200 shadow-sm space-y-3 text-center">
+                <div class="spinner mx-auto"></div>
+                <p id="timer-count-text" class="text-xs font-extrabold text-warm-dark">
+                    Installing App... (${timeLeft}s)
+                </p>
+                <p class="text-[10px] text-warm-muted">
+                    Please wait while we finalize offline standalone setup.
+                </p>
+            </div>`;
+
+        installTimer = setInterval(() => {
+            timeLeft--;
+            const timerText = document.getElementById('timer-count-text');
+            if (timerText) timerText.innerText = `Installing App... (${timeLeft}s)`;
+
+            if (timeLeft <= 0) {
+                clearInterval(installTimer);
+                localStorage.setItem('pwa_installed_strictly', 'true');
+                
+                actionBox.innerHTML = `
+                    <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-900 space-y-2 text-center">
+                        <i class="fa-solid fa-circle-check text-2xl text-emerald-600"></i>
+                        <p class="text-xs font-bold">Successfully Installed!</p>
+                        <p class="text-[11px] leading-relaxed">
+                            You can use app features inside the app. You cannot use features in this site inside the browser. Please close browser and open the App from home screen.
+                        </p>
+                    </div>`;
+            }
+        }, 1000);
+    }
+
+    // Service Worker Registration & Live Auto-Update Engine
+    function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then((registration) => {
                 
-                // Check for updates every time page is opened or online status changes
+                // Explicitly poll server for sw.js or index.html updates on launch
+                registration.update();
+
                 registration.onupdatefound = () => {
                     const installingWorker = registration.installing;
                     if (installingWorker == null) return;
@@ -1336,22 +1342,30 @@ function start30SecondTimer() {
                     installingWorker.onstatechange = () => {
                         if (installingWorker.state === 'installed') {
                             if (navigator.serviceWorker.controller) {
-                                // New update available and installed: reload page seamlessly
-                                console.log('New version available. Auto-updating...');
+                                console.log('New version available. Auto-updating app...');
                                 window.location.reload();
                             }
                         }
                     };
                 };
             }).catch(err => console.error('PWA Registration failed:', err));
-        });
 
-        // Automatically check for updates when returning online
-        window.addEventListener('online', () => {
-            navigator.serviceWorker.getRegistration().then((reg) => {
-                if (reg) reg.update();
+            // Seamless refresh listener when Service Worker takes control
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
             });
-        });
+
+            // Automatically check for updates when device reconnects online
+            window.addEventListener('online', () => {
+                navigator.serviceWorker.getRegistration().then((reg) => {
+                    if (reg) reg.update();
+                });
+            });
+        }
     }
 </script>
 </body>
