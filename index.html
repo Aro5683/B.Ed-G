@@ -1390,22 +1390,14 @@ function handleDeepLinkRouting() {
 }
 
 // Auto-open and play YouTube video in modal view
+// Auto-open and play YouTube video in modal view
 function autoOpenAndPlayVideo(videoId) {
     const video = VIDEOS_DATABASE.find(v => v.id === videoId);
     if (!video) return;
 
-    // Convert standard YouTube URL to Embed URL with AutoPlay enabled
-    let embedUrl = video.youtubeUrl;
-    if (embedUrl.includes('watch?v=')) {
-        embedUrl = embedUrl.replace('watch?v=', 'embed/');
-    } else if (embedUrl.includes('youtu.be/')) {
-        embedUrl = embedUrl.replace('youtu.be/', 'www.youtube.com/embed/');
-    }
-    
-    // Append autoplay parameter
-    embedUrl += (embedUrl.includes('?') ? '&' : '?') + 'autoplay=1&enablejsapi=1';
+    // Use correct 'youtubeId' property from VIDEOS_DATABASE
+    const embedUrl = `https://www.youtube.com/embed/${video.youtubeId}?autoplay=1&enablejsapi=1`;
 
-    // Inject iframe player into modal container and display
     const videoModal = document.getElementById('modal-video-player');
     const videoContainer = document.getElementById('video-player-container');
     const videoTitle = document.getElementById('video-player-title');
@@ -1427,32 +1419,28 @@ function autoOpenAndPlayVideo(videoId) {
 // Auto-open PDF Circular in reader view
 function autoOpenCircularPdf(circularId) {
     const circular = CIRCULARS.find(c => c.id === circularId);
-    if (circular && typeof openPdfViewer === 'function') {
-        openPdfViewer(circular.pdfUrl, circular.title);
+    if (circular && typeof openMozillaViewer === 'function') {
+        openMozillaViewer(circular.url);
     }
 }
 
 // Auto-open Subject Note PDF in reader view
 function autoOpenNotePdf(noteId) {
     const note = NOTES_DATABASE.find(n => n.id === noteId);
-    if (note && typeof openPdfViewer === 'function') {
-        openPdfViewer(note.pdfUrl, note.title);
+    if (note && typeof openMozillaViewer === 'function') {
+        openMozillaViewer(note.url);
     }
 }
 
 // Auto-open specific University Notice Modal
 function autoOpenNotice(noticeId) {
-    if (typeof openNoticeModal === 'function') {
-        openNoticeModal(noticeId);
-    } else {
-        const noticeElem = document.getElementById(noticeId) || document.getElementById('noticeList')?.firstElementChild;
-        if (noticeElem) {
-            noticeElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            noticeElem.click();
-        }
+    const noticeElem = document.getElementById(noticeId) || document.getElementById('noticeList')?.firstElementChild;
+    if (noticeElem) {
+        noticeElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const viewBtn = noticeElem.querySelector('button');
+        if (viewBtn) viewBtn.click();
     }
 }
-
     // Helper to safely stop video audio on close
 function closeVideoModal() {
     const videoContainer = document.getElementById('video-player-container');
