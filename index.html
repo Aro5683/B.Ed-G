@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>EduPortal - Modern Warm Aesthetics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #121212;
+            color: #4a3e3d;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        @media (min-width: 640px) {
+            body {
+                background-color: #e5e5e5;
+            }
+        }
+
+        .bg-warm-main { background-color: #f7f4f0; }
+        .bg-warm-card { background-color: #ffffff; }
+        .bg-warm-accent { background-color: #e6b098; }
+        .bg-warm-dark { background-color: #594240; }
+        .bg-warm-subtle { background-color: #ede6df; }
+        .text-warm-dark { color: #3d2e2c; }
+        .text-warm-muted { color: #8c7a78; }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .spinner {
+            border: 3px solid #ede6df;
+            border-top: 3px solid #594240;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .qa-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .qa-card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -10px rgba(89, 66, 64, 0.12);
+        }
+
+        /* Modern Solid Input Focus Aesthetics */
+        .modern-input {
+            background-color: #ffffff;
+            border: 1.5px solid #e7e0d8;
+            transition: all 0.2s ease-in-out;
+        }
+        .modern-input:focus-within, .modern-input:focus {
+            border-color: #594240;
+            box-shadow: 0 0 0 4px rgba(89, 66, 64, 0.08);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center select-none p-0 sm:p-4">
+
+    <!-- Container: Full screen on mobile, styled container on desktop -->
+    <div id="app" class="relative w-full h-full sm:h-[92vh] max-w-md mx-auto bg-warm-main shadow-2xl flex flex-col overflow-hidden sm:rounded-[40px] border-0 sm:border border-stone-200">
+
+        <!-- SCREEN: BENEFITS / WELCOME -->
+        <div id="screen-benefits" class="flex-1 flex flex-col justify-between p-6 overflow-y-auto relative">
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-80 bg-warm-subtle rounded-b-full -z-0 opacity-70"></div>
+            
+            <div class="relative z-10 pt-4 flex flex-col items-center text-center">
+                <div class="relative w-56 h-64 mb-6 rounded-t-full overflow-hidden border-4 border-white shadow-md">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" alt="Student" class="w-full h-full object-cover">
+                </div>
+
+                <div class="space-y-2">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-warm-dark">
+                        LEARN <span class="text-warm-accent font-light">ANYWHERE</span><br>TIME
+                    </h1>
+                    <p class="text-xs text-warm-muted max-w-[240px] mx-auto leading-relaxed pt-2">
+                        Start new courses with verified materials and build your best skills with us.
+                    </p>
+                </div>
+            </div>
+
+            <div class="relative z-10 pb-6 sm:pb-4">
+                <button onclick="navigateTo('screen-register')" class="w-full py-4 rounded-full bg-warm-dark hover:bg-stone-800 text-white font-bold text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-3">
+                    Let's Start <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN: MODERN TRENDY REGISTRATION (SOLID UI - NO GLASSMORPHISM) -->
+        <div id="screen-register" class="hidden flex-1 flex-col p-6 overflow-y-auto hide-scrollbar">
+            <div class="my-auto py-4 space-y-6">
+                
+                <!-- Registration Header -->
+                <div class="space-y-2">
+                    <button onclick="navigateTo('screen-benefits')" class="w-9 h-9 rounded-full bg-white text-warm-dark flex items-center justify-center shadow-sm border border-stone-200/80 mb-2 hover:bg-stone-50">
+                        <i class="fa-solid fa-arrow-left text-xs"></i>
+                    </button>
+                    <span class="text-[11px] font-black uppercase tracking-widest text-warm-accent block">Get Started</span>
+                    <h2 class="text-2xl font-black text-warm-dark tracking-tight">Create Profile</h2>
+                    <p class="text-xs text-warm-muted">Enter your academic details to personalize your portal.</p>
+                </div>
+
+                <form id="registration-form" onsubmit="handleRegistration(event)" class="space-y-4">
+                    
+                    <!-- Full Name -->
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-black text-warm-dark uppercase tracking-wider">Full Name *</label>
+                        <div class="relative flex items-center">
+                            <i class="fa-regular fa-user absolute left-4 text-stone-400 text-xs"></i>
+                            <input type="text" id="reg-name" required placeholder="Alex Johnson" class="modern-input w-full pl-10 pr-4 py-3.5 rounded-2xl text-xs font-semibold text-warm-dark placeholder-stone-400 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- College -->
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-black text-warm-dark uppercase tracking-wider">College Name *</label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-building-columns absolute left-4 text-stone-400 text-xs"></i>
+                            <input type="text" id="reg-college" required placeholder="University / Campus Name" class="modern-input w-full pl-10 pr-4 py-3.5 rounded-2xl text-xs font-semibold text-warm-dark placeholder-stone-400 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-black text-warm-dark uppercase tracking-wider">Phone Number *</label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-mobile-screen absolute left-4 text-stone-400 text-xs"></i>
+                            <input type="tel" id="reg-phone" pattern="[0-9]{10}" placeholder="10 Digit Mobile Number" required class="modern-input w-full pl-10 pr-4 py-3.5 rounded-2xl text-xs font-semibold text-warm-dark placeholder-stone-400 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Grid: Medium & Semester -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1.5">
+                            <label class="block text-[11px] font-black text-warm-dark uppercase tracking-wider">Medium *</label>
+                            <div class="relative flex items-center">
+                                <i class="fa-solid fa-language absolute left-3.5 text-stone-400 text-xs pointer-events-none"></i>
+                                <select id="reg-medium" required class="modern-input w-full pl-9 pr-6 py-3.5 rounded-2xl text-xs font-semibold text-warm-dark outline-none appearance-none cursor-pointer">
+                                    <option value="">Select</option>
+                                    <option value="English">English</option>
+                                    <option value="Tamil">Tamil</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 text.stone-400 text-[10px] pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-[11px] font-black text-warm-dark uppercase tracking-wider">Semester *</label>
+                            <div class="relative flex items-center">
+                                <i class="fa-solid fa-layer-group absolute left-3.5 text-stone-400 text-xs pointer-events-none"></i>
+                                <select id="reg-semester" required class="modern-input w-full pl-9 pr-6 py-3.5 rounded-2xl text-xs font-semibold text-warm-dark outline-none appearance-none cursor-pointer">
+                                    <option value="">Select</option>
+                                    <option value="1">Sem 1</option>
+                                    <option value="2">Sem 2</option>
+                                    <option value="3">Sem 3</option>
+                                    <option value="4">Sem 4</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 text-stone-400 text-[10px] pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Terms Checkbox -->
+                    <div class="flex items-center gap-3 pt-2">
+                        <input type="checkbox" id="reg-terms" required class="w-4 h-4 text-warm-dark rounded-md border-stone-300 focus:ring-warm-dark cursor-pointer">
+                        <label for="reg-terms" class="text-[11px] text-warm-muted leading-tight">
+                            I agree to the <button type="button" onclick="openPolicyPage('terms')" class="text-warm-dark font-black underline hover:text-warm-accent">Terms & Conditions</button>
+                        </label>
+                    </div>
+
+                    <!-- Solid High Contrast Submit Button -->
+                    <button type="submit" class="w-full py-4 rounded-2xl bg-warm-dark hover:bg-stone-800 active:scale-[0.99] text-white font-black text-xs tracking-widest uppercase transition-all shadow-md mt-2 flex items-center justify-center gap-2">
+                        <span>Complete Registration</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SCREEN: MAIN DASHBOARD -->
+        <div id="screen-dashboard" class="hidden flex-1 flex-col overflow-hidden relative bg-warm-main">
+            
+            <!-- Dashboard Header -->
+            <div class="px-6 pt-5 pb-3 flex items-center justify-between z-10 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTab('account')" class="w-10 h-10 rounded-full bg-warm-subtle overflow-hidden border border-white">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" class="w-full h-full object-cover" alt="Profile">
+                    </button>
+                    <div>
+                        <h2 id="home-username" class="text-base font-bold text-warm-dark leading-tight">Hey Student</h2>
+                        <p class="text-[10px] text-warm-muted font-medium">Are you ready to learn?</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="switchTab('qa')" id="tab-qa-head" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-warm-dark shadow-sm hover:bg-stone-50 transition relative">
+                        <i class="fa-solid fa-book-open-reader text-sm"></i>
+                        <span id="qaBadge" class="hidden absolute -top-1 -right-1 bg-warm-accent text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white min-w-[18px] text-center">0</span>
+                    </button>
+
+                    <button onclick="switchTab('notification')" id="tab-notification-head" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-warm-dark shadow-sm hover:bg-stone-50 transition relative">
+                        <i class="fa-regular fa-bell text-sm"></i>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-warm-accent rounded-full"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto hide-scrollbar px-6 pb-28 pt-2">
+                
+                <!-- VIEW: HOME -->
+                <div id="view-home" class="space-y-5">
+                    <div>
+                        <div class="flex justify-between items-center mb-2.5">
+                            <h3 class="text-xs font-bold text-warm-dark uppercase tracking-wider">Ongoing Briefing</h3>
+                            <button onclick="switchTab('all-videos')" class="text-[11px] text-warm-muted hover:text-warm-dark font-bold">View All</button>
+                        </div>
+                        <div class="space-y-3" id="home-briefing-list"></div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2.5">
+                            <h3 class="text-xs font-bold text-warm-dark uppercase tracking-wider">App Circulars</h3>
+                            <button onclick="switchTab('all-circulars')" class="text-[11px] text-warm-muted hover:text-warm-dark font-bold">View All</button>
+                        </div>
+                        <div class="space-y-2.5" id="home-circulars-list"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW: Q&A -->
+                <div id="view-qa" class="hidden space-y-4">
+                    <div class="flex items-center justify-between border-b border-stone-200/60 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-warm-dark uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-graduation-cap text-warm-accent"></i> Semester Q&A Library
+                            </h3>
+                            <p id="qa-semester-subtitle" class="text-[10px] text-warm-muted mt-0.5">Fetching materials for your profile...</p>
+                        </div>
+                        <button onclick="initBloggerQaFeed()" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-warm-dark shadow-sm hover:rotate-180 transition-all duration-500">
+                            <i class="fa-solid fa-rotate text-xs"></i>
+                        </button>
+                    </div>
+
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-warm-muted text-xs"></i>
+                        <input type="text" id="qa-search-input" oninput="filterQaArticles()" placeholder="Search Q&A titles or topics..." class="w-full pl-10 pr-4 py-3 bg-white rounded-2xl border border-stone-200 text-xs text-warm-dark focus:outline-none focus:ring-2 focus:ring-warm-dark shadow-sm">
+                    </div>
+
+                    <div id="qaContainer" class="space-y-3.5"></div>
+                </div>
+
+                <!-- VIEW: ALL VIDEOS -->
+                <div id="view-all-videos" class="hidden space-y-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <button onclick="switchTab('home')" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-warm-dark shadow-sm">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </button>
+                        <h3 class="text-sm font-bold text-warm-dark uppercase tracking-wider">All Video Briefings</h3>
+                    </div>
+                    <div id="all-videos-grid" class="space-y-4"></div>
+                </div>
+
+                <!-- VIEW: ALL CIRCULARS -->
+                <div id="view-all-circulars" class="hidden space-y-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <button onclick="switchTab('home')" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-warm-dark shadow-sm">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </button>
+                        <h3 class="text-sm font-bold text-warm-dark uppercase tracking-wider">All App Circulars</h3>
+                    </div>
+                    <div id="all-circulars-grid" class="space-y-2.5"></div>
+                </div>
+
+                <!-- VIEW: NOTES -->
+                <div id="view-notes" class="hidden space-y-4">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-warm-muted text-xs"></i>
+                        <input type="text" id="notes-search" oninput="renderNotes()" placeholder="Search notes..." class="w-full pl-10 pr-4 py-3 bg-white rounded-2xl border border-stone-200 text-xs text-warm-dark focus:outline-none focus:ring-2 focus:ring-warm-dark shadow-sm">
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-warm-muted px-1">
+                        <span id="home-user-meta" class="text-[11px] font-medium">Filtered for your Profile</span>
+                        <span id="notes-count" class="font-bold text-warm-dark bg-warm-subtle px-2.5 py-0.5 rounded-full">0 items</span>
+                    </div>
+
+                    <div id="notes-list" class="grid grid-cols-2 gap-3"></div>
+                </div>
+
+                <!-- VIEW: CUSTOM -->
+                <div id="view-custom" class="hidden">
+                    <div class="p-8 text-center bg-white rounded-3xl border border-dashed border-stone-300 space-y-2 shadow-sm">
+                        <i class="fa-solid fa-code text-2xl text-warm-accent mb-1"></i>
+                        <p class="text-xs text-warm-dark font-bold">Custom Canvas Workspace</p>
+                        <p class="text-[11px] text-warm-muted">Paste custom HTML block into source code to render here.</p>
+                    </div>
+                </div>
+
+                <!-- VIEW: DOWNLOADS -->
+                <div id="view-downloads" class="hidden space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-warm-dark uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-folder-closed text-warm-accent"></i> Downloaded Notes
+                        </h3>
+                        <span id="tab-downloads-count" class="text-[10px] font-bold text-warm-dark bg-warm-subtle px-2.5 py-0.5 rounded-full">0 files</span>
+                    </div>
+
+                    <div id="page-downloads-list" class="space-y-2.5 text-xs"></div>
+                </div>
+
+                <!-- VIEW: NOTIFICATIONS -->
+                <div id="view-notification" class="hidden space-y-4">
+                    <div class="flex items-center justify-between border-b border-stone-200/60 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-warm-dark uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-bell text-warm-accent"></i> Notifications
+                            </h3>
+                            <p class="text-[10px] text-warm-muted mt-0.5">Live University Notices & Announcements</p>
+                        </div>
+                        <button onclick="loadNotices()" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-warm-dark shadow-sm hover:rotate-180 transition-all duration-500">
+                            <i class="fa-solid fa-rotate text-xs"></i>
+                        </button>
+                    </div>
+
+                    <div id="noticeList" class="space-y-3.5"></div>
+                </div>
+
+                <!-- VIEW: ACCOUNT & POLICY NAV -->
+                <div id="view-account" class="hidden space-y-4">
+                    <div class="bg-white p-5 rounded-3xl border border-stone-100 shadow-sm space-y-3">
+                        <div class="flex items-center gap-3 pb-3 border-b border-stone-100">
+                            <div class="w-12 h-12 rounded-full bg-warm-subtle overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" class="w-full h-full object-cover" alt="Profile">
+                            </div>
+                            <div>
+                                <h3 id="acc-name" class="text-sm font-bold text-warm-dark">-</h3>
+                                <p id="acc-phone" class="text-[11px] text-warm-muted">-</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="col-span-2"><span class="text-warm-muted text-[10px] block uppercase font-medium">College</span><span id="acc-college" class="font-bold text-warm-dark">-</span></div>
+                            <div><span class="text-warm-muted text-[10px] block uppercase font-medium">Medium</span><span id="acc-medium" class="font-bold text-warm-dark">-</span></div>
+                            <div><span class="text-warm-muted text-[10px] block uppercase font-medium">Semester</span><span id="acc-semester" class="font-bold text-warm-dark">-</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-3xl border border-stone-100 shadow-sm space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-warm-dark flex items-center gap-2"><i class="fa-solid fa-hard-drive text-warm-accent"></i> OPFS Storage Space</span>
+                            <span id="opfs-usage-text" class="text-warm-muted text-[11px]">Calculating...</span>
+                        </div>
+                        <div class="w-full bg-warm-subtle rounded-full h-2 overflow-hidden">
+                            <div id="opfs-bar" class="bg-warm-dark h-full w-0 transition-all duration-300"></div>
+                        </div>
+                    </div>
+
+                    <!-- Account Navigation Items (Opens full pages inside app frame) -->
+                    <div class="bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden divide-y divide-stone-100 text-xs font-medium text-warm-dark">
+                        <button onclick="openPolicyPage('terms')" class="w-full p-3.5 text-left hover:bg-stone-50 flex items-center justify-between transition">
+                            <span class="flex items-center gap-2.5"><i class="fa-regular fa-file-lines text-warm-muted"></i> Terms and Conditions</span>
+                            <i class="fa-solid fa-chevron-right text-stone-300 text-xs"></i>
+                        </button>
+                        <button onclick="openPolicyPage('privacy')" class="w-full p-3.5 text-left hover:bg-stone-50 flex items-center justify-between transition">
+                            <span class="flex items-center gap-2.5"><i class="fa-solid fa-shield-halved text-warm-muted"></i> Privacy Policy</span>
+                            <i class="fa-solid fa-chevron-right text-stone-300 text-xs"></i>
+                        </button>
+                        <button onclick="openPolicyPage('about')" class="w-full p-3.5 text-left hover:bg-stone-50 flex items-center justify-between transition">
+                            <span class="flex items-center gap-2.5"><i class="fa-regular fa-circle-question text-warm-muted"></i> About App</span>
+                            <i class="fa-solid fa-chevron-right text-stone-300 text-xs"></i>
+                        </button>
+                        <button onclick="navigator.share ? navigator.share({title:'EduPortal', url:window.location.href}) : alert('Share Link Copied!')" class="w-full p-3.5 text-left hover:bg-stone-50 flex items-center justify-between transition">
+                            <span class="flex items-center gap-2.5"><i class="fa-solid fa-share-nodes text-warm-muted"></i> Share App</span>
+                            <i class="fa-solid fa-chevron-right text-stone-300 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Solid Clear Visible Danger Button -->
+                    <button onclick="deleteAccount()" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Delete Account & OPFS Data
+                    </button>
+                </div>
+
+                <!-- VIEW: FULL PAGE INFO CONTENT (Inside App Navigation) -->
+                <div id="view-policy-page" class="hidden space-y-4">
+                    <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+                        <button onclick="closePolicyPage()" class="px-3.5 py-2 bg-white rounded-2xl text-warm-dark font-bold text-xs shadow-sm flex items-center gap-2 hover:bg-stone-50 transition border border-stone-100">
+                            <i class="fa-solid fa-arrow-left text-xs"></i> Back
+                        </button>
+                        <span id="policy-page-title" class="text-xs font-black uppercase tracking-wider text-warm-dark">Document</span>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-3xl border border-stone-100 shadow-sm space-y-3">
+                        <h3 id="policy-heading" class="text-base font-extrabold text-warm-dark">Title</h3>
+                        <div id="policy-body" class="text-xs text-warm-dark leading-relaxed border-t border-stone-100 pt-3 space-y-3">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Navigation Bar -->
+            <div class="absolute bottom-4 left-6 right-6 bg-warm-dark rounded-full py-2 px-3 flex justify-around items-center z-20 shadow-xl">
+                <button onclick="switchTab('home')" id="tab-home" class="tab-btn w-11 h-11 rounded-full flex items-center justify-center text-warm-dark bg-warm-subtle transition-all duration-300 shadow-md">
+                    <i class="fa-solid fa-house text-base"></i>
+                </button>
+                
+                <button onclick="switchTab('notes')" id="tab-notes" class="tab-btn w-11 h-11 rounded-full flex items-center justify-center text-stone-400 hover:text-white transition-all duration-300">
+                    <i class="fa-regular fa-heart text-base"></i>
+                </button>
+
+                <button onclick="switchTab('custom')" id="tab-custom" class="tab-btn w-11 h-11 rounded-full flex items-center justify-center text-stone-400 hover:text-white transition-all duration-300">
+                    <i class="fa-solid fa-graduation-cap text-base"></i>
+                </button>
+
+                <button onclick="switchTab('downloads')" id="tab-downloads" class="tab-btn w-11 h-11 rounded-full flex items-center justify-center text-stone-400 hover:text-white transition-all duration-300 relative">
+                    <i class="fa-solid fa-circle-down text-base"></i>
+                    <span id="download-badge" class="hidden absolute top-2 right-2 w-2 h-2 bg-warm-accent rounded-full"></span>
+                </button>
+
+                <button onclick="switchTab('account')" id="tab-account" class="tab-btn w-11 h-11 rounded-full flex items-center justify-center text-stone-400 hover:text-white transition-all duration-300">
+                    <i class="fa-regular fa-user text-base"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL: WHATSAPP -->
+        <div id="modal-whatsapp" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl space-y-4 border border-stone-100">
+                <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto">
+                    <i class="fa-brands fa-whatsapp text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-warm-dark">Join Student Group</h3>
+                <p class="text-xs text-warm-muted leading-relaxed">Connect with academic groups on WhatsApp to receive immediate notes releases and exam updates.</p>
+                <button onclick="joinWhatsApp()" class="w-full py-3.5 bg-[#25D366] hover:bg-emerald-600 text-white rounded-2xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Join WhatsApp Group
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL: SUCCESS -->
+        <div id="modal-success" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl space-y-4 border border-stone-100">
+                <div class="w-14 h-14 bg-warm-subtle text-warm-dark rounded-2xl flex items-center justify-center mx-auto">
+                    <i class="fa-solid fa-circle-check text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-warm-dark">Registration Done</h3>
+                <p class="text-xs text-warm-muted leading-relaxed">Your profile has been saved into local browser OPFS memory.</p>
+                <button onclick="completeRegistrationFlow()" class="w-full py-3.5 bg-warm-dark hover:bg-stone-800 text-white rounded-2xl text-xs font-bold transition shadow-md">
+                    Explore Dashboard
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    const PROXY_URL = "https://whatsapp.arotesting54.workers.dev/?url=";
+
+    const VIDEOS_DATABASE = [
+        { id: 'v1', title: 'Orientation & Academic Briefing 2026', youtubeId: 'dQw4w9WgXcQ', date: 'Mar 1, 2026' },
+        { id: 'v2', title: 'Exam Guidelines & Semester Strategy', youtubeId: 'dQw4w9WgXcQ', date: 'Feb 20, 2026' },
+        { id: 'v3', title: 'Campus Placement Prep & Skills Guide', youtubeId: 'dQw4w9WgXcQ', date: 'Jan 15, 2026' }
+    ];
+
+    const CIRCULARS = [
+        { id: 'c1', title: 'Semester Examination Timetable 2026', date: 'Mar 2, 2026', url: 'https://pdfobject.com/pdf/sample.pdf' },
+        { id: 'c2', title: 'Academic Holidays & Evaluation Guidelines', date: 'Feb 28, 2026', url: 'https://pdfobject.com/pdf/sample.pdf' },
+        { id: 'c3', title: 'Library Book Return & Fine Waiver Notice', date: 'Feb 10, 2026', url: 'https://pdfobject.com/pdf/sample.pdf' },
+        { id: 'c4', title: 'Sports Day & Cultural Event Registration', date: 'Jan 22, 2026', url: 'https://pdfobject.com/pdf/sample.pdf' }
+    ];
+
+    const NOTES_DATABASE = [
+        { id: 'n1', title: 'CSS Basic Course', semester: '3', medium: 'English', author: 'Eleanor Pena', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop', url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf' },
+        { id: 'n2', title: 'AI Basic Course', semester: '3', medium: 'English', author: 'Guy Hawkins', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop', url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf' },
+        { id: 'n3', title: 'Tamil Computing & Data', semester: '3', medium: 'Tamil', author: 'Arun Kumar', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop', url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf' },
+        { id: 'n4', title: 'Basic Electronics', semester: '1', medium: 'English', author: 'Jenny Wilson', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop', url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf' },
+        { id: 'n5', title: 'Environmental Science', semester: '2', medium: 'Tamil', author: 'Kavitha M', img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=300&auto=format&fit=crop', url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf' }
+    ];
+
+    let currentUserData = null;
+    let downloadedFiles = new Set();
+    let loadedQaEntries = [];
+    let previousTabBeforePolicy = 'account';
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        await loadUserDataFromOPFS();
+        if (currentUserData) {
+            showDashboard();
+        } else {
+            navigateTo('screen-benefits');
+        }
+    });
+
+    function navigateTo(screenId) {
+        ['screen-benefits', 'screen-register', 'screen-dashboard'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.add('hidden');
+                element.classList.remove('flex');
+            }
+        });
+        const target = document.getElementById(screenId);
+        if (target) {
+            target.classList.remove('hidden');
+            target.classList.add('flex');
+        }
+    }
+
+    async function getOPFSRoot() {
+        if (navigator.storage && navigator.storage.getDirectory) {
+            return await navigator.storage.getDirectory();
+        }
+        throw new Error("OPFS is not supported in this environment");
+    }
+
+    async function saveUserDataToOPFS(data) {
+        try {
+            const root = await getOPFSRoot();
+            const fileHandle = await root.getFileHandle('user_profile.json', { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(JSON.stringify(data));
+            await writable.close();
+        } catch (err) {
+            localStorage.setItem('user_profile', JSON.stringify(data));
+        }
+    }
+
+    async function loadUserDataFromOPFS() {
+        try {
+            const root = await getOPFSRoot();
+            const fileHandle = await root.getFileHandle('user_profile.json');
+            const file = await fileHandle.getFile();
+            const text = await file.text();
+            currentUserData = JSON.parse(text);
+        } catch (err) {
+            const fallback = localStorage.getItem('user_profile');
+            currentUserData = fallback ? JSON.parse(fallback) : null;
+        }
+    }
+
+    async function handleRegistration(e) {
+        e.preventDefault();
+        currentUserData = {
+            name: document.getElementById('reg-name').value.trim(),
+            college: document.getElementById('reg-college').value.trim(),
+            phone: document.getElementById('reg-phone').value.trim(),
+            medium: document.getElementById('reg-medium').value,
+            semester: document.getElementById('reg-semester').value
+        };
+
+        await saveUserDataToOPFS(currentUserData);
+        toggleModal('modal-whatsapp', true);
+    }
+
+    function joinWhatsApp() {
+        window.open('https://whatsapp.com', '_blank');
+        toggleModal('modal-whatsapp', false);
+        toggleModal('modal-success', true);
+    }
+
+    function completeRegistrationFlow() {
+        toggleModal('modal-success', false);
+        showDashboard();
+    }
+
+    function showDashboard() {
+        navigateTo('screen-dashboard');
+        
+        document.getElementById('home-username').innerText = `Hey ${currentUserData.name.split(' ')[0]}`;
+        document.getElementById('home-user-meta').innerText = `Sem ${currentUserData.semester} • ${currentUserData.medium} Medium`;
+
+        document.getElementById('acc-name').innerText = currentUserData.name;
+        document.getElementById('acc-phone').innerText = currentUserData.phone;
+        document.getElementById('acc-college').innerText = currentUserData.college;
+        document.getElementById('acc-medium').innerText = currentUserData.medium;
+        document.getElementById('acc-semester').innerText = `Semester ${currentUserData.semester}`;
+
+        renderVideos();
+        renderCirculars();
+        renderNotes();
+        syncDownloadedList();
+        updateStorageMetrics();
+        loadNotices();
+        initBloggerQaFeed();
+    }
+
+    function switchTab(tabKey) {
+        const allViews = ['home', 'all-videos', 'all-circulars', 'notes', 'custom', 'downloads', 'notification', 'qa', 'account', 'policy-page'];
+        
+        allViews.forEach(t => {
+            const view = document.getElementById(`view-${t}`);
+            if (view) view.classList.add('hidden');
+            
+            const btn = document.getElementById(`tab-${t}`);
+            if (btn) {
+                btn.className = 'tab-btn w-11 h-11 rounded-full flex items-center justify-center text-stone-400 hover:text-white transition-all duration-300 relative';
+            }
+        });
+
+        const headNotifBtn = document.getElementById('tab-notification-head');
+        if (headNotifBtn) headNotifBtn.className = 'w-10 h-10 rounded-full bg-white flex items-center justify-center text-warm-dark shadow-sm hover:bg-stone-50 transition relative';
+
+        const headQaBtn = document.getElementById('tab-qa-head');
+        if (headQaBtn) headQaBtn.className = 'w-10 h-10 rounded-full bg-white flex items-center justify-center text-warm-dark shadow-sm hover:bg-stone-50 transition relative';
+
+        const selectedView = document.getElementById(`view-${tabKey}`);
+        if (selectedView) selectedView.classList.remove('hidden');
+
+        const activeBtn = document.getElementById(`tab-${tabKey}`);
+        if (activeBtn) {
+            activeBtn.className = 'tab-btn w-11 h-11 rounded-full flex items-center justify-center text-warm-dark bg-warm-subtle transition-all duration-300 shadow-md relative';
+        }
+
+        if (tabKey === 'notification' && headNotifBtn) {
+            headNotifBtn.className = 'w-10 h-10 rounded-full bg-warm-dark text-white flex items-center justify-center shadow-md transition relative';
+        }
+
+        if (tabKey === 'qa') {
+            if (headQaBtn) headQaBtn.className = 'w-10 h-10 rounded-full bg-warm-dark text-white flex items-center justify-center shadow-md transition relative';
+            const badge = document.getElementById("qaBadge");
+            if (badge) badge.style.display = "none";
+        }
+    }
+
+    /* Policy and Information Page Navigation inside App Canvas */
+    function openPolicyPage(type) {
+        const titleEl = document.getElementById('policy-page-title');
+        const headingEl = document.getElementById('policy-heading');
+        const bodyEl = document.getElementById('policy-body');
+
+        // Check if currently inside registration view or dashboard
+        const regScreen = document.getElementById('screen-register');
+        if (regScreen && !regScreen.classList.contains('hidden')) {
+            previousTabBeforePolicy = 'register';
+            navigateTo('screen-dashboard');
+        } else {
+            previousTabBeforePolicy = 'account';
+        }
+
+        if (type === 'terms') {
+            titleEl.innerText = "Terms & Conditions";
+            headingEl.innerText = "Academic Usage Policy & Terms";
+            bodyEl.innerHTML = `
+                <p>Welcome to EduPortal. By creating an account and accessing materials, you agree to comply with our academic standards.</p>
+                <p class="font-bold text-warm-dark">1. Use of Materials</p>
+                <p>All downloadable study materials and video briefings are exclusively for registered students and individual educational reference.</p>
+                <p class="font-bold text-warm-dark">2. Local Storage</p>
+                <p>Your academic profile and downloaded PDFs are maintained inside browser local OPFS memory for quick offline access.</p>
+            `;
+        } else if (type === 'privacy') {
+            titleEl.innerText = "Privacy Policy";
+            headingEl.innerText = "Data & Privacy Governance";
+            bodyEl.innerHTML = `
+                <p>Your privacy is paramount. EduPortal is designed with local-first client storage.</p>
+                <p class="font-bold text-warm-dark">1. Profile Data</p>
+                <p>Your name, phone number, and academic details are stored directly on your device using OPFS. No external tracking cookies are deployed.</p>
+                <p class="font-bold text-warm-dark">2. Downloads</p>
+                <p>All saved study notes remain strictly within your device's browser sandbox storage.</p>
+            `;
+        } else if (type === 'about') {
+            titleEl.innerText = "About App";
+            headingEl.innerText = "EduPortal Modern Edition 2026";
+            bodyEl.innerHTML = `
+                <p>EduPortal is a modern, mobile-optimized academic web application engineered for high performance and offline PDF management.</p>
+                <p class="font-bold text-warm-dark">Version</p>
+                <p>v3.5 - Solid Modern UI Release</p>
+                <p class="font-bold text-warm-dark">Key Features</p>
+                <p>• Fast OPFS File Storage<br>• Live Q&A Stream Library<br>• Direct Document Viewer Integration</p>
+            `;
+        }
+
+        switchTab('policy-page');
+    }
+
+    function closePolicyPage() {
+        if (previousTabBeforePolicy === 'register') {
+            navigateTo('screen-register');
+        } else {
+            switchTab('account');
+        }
+    }
+
+    function initBloggerQaFeed() {
+        let chosenSem = currentUserData ? `Semester ${currentUserData.semester}` : "Semester 1";
+        document.getElementById("qa-semester-subtitle").innerText = `Live feeds for ${chosenSem}`;
+
+        let bloggerUrl = chosenSem === "Semester 1" 
+            ? "https://semester1-questions.blogspot.com" 
+            : "https://semester2-questions.blogspot.com";
+        
+        loadBloggerPosts(bloggerUrl);
+    }
+
+    async function loadBloggerPosts(blogUrl) {
+        let container = document.getElementById("qaContainer");
+        
+        container.innerHTML = `
+            <div id="qaFrameLoader" class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3 flex flex-col items-center justify-center">
+                <div class="spinner"></div>
+                <p class="text-xs font-bold text-warm-dark">Loading Q&A Library...</p>
+            </div>`;
+
+        let cleanUrl = blogUrl.replace(/\/$/, "");
+        let jsonFeedUrl = `${PROXY_URL}${encodeURIComponent(cleanUrl + "/feeds/posts/default?alt=json")}`;
+
+        try {
+            let response = await fetch(jsonFeedUrl);
+            let data = await response.json();
+            
+            loadedQaEntries = data?.feed?.entry || [];
+            
+            let badge = document.getElementById("qaBadge");
+            if (badge) {
+                badge.innerText = loadedQaEntries.length;
+                const qaView = document.getElementById("view-qa");
+                if (qaView && qaView.classList.contains("hidden")) {
+                    badge.style.display = "inline-block";
+                }
+            }
+
+            renderQaFeed(loadedQaEntries);
+
+        } catch (error) {
+            container.innerHTML = `
+                <div class='p-6 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-2'>
+                    <i class="fa-solid fa-circle-exclamation text-2xl text-amber-600"></i>
+                    <p class="text-xs font-bold text-warm-dark">Feed stream unreachable directly.</p>
+                    <a href="${blogUrl}" target="_blank" class="inline-block px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold mt-2">Open Blog Directly</a>
+                </div>`;
+        }
+    }
+
+    function renderQaFeed(entries) {
+        let container = document.getElementById("qaContainer");
+        const searchQuery = (document.getElementById('qa-search-input')?.value || "").toLowerCase().trim();
+
+        const filtered = entries.filter(entry => {
+            let title = (entry.title?.$t || "").toLowerCase();
+            let body = (entry.content?.$t || entry.summary?.$t || "").toLowerCase();
+            return title.includes(searchQuery) || body.includes(searchQuery);
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class='p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-2'>
+                    <i class="fa-solid fa-magnifying-glass text-2xl text-warm-accent"></i>
+                    <p class="text-xs font-bold text-warm-dark">No matching questions found.</p>
+                    <p class="text-[10px] text-warm-muted">Try searching with different keywords.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = "";
+        filtered.forEach((entry, index) => {
+            let title = entry.title?.$t || "Untitled Question";
+            let fullContent = entry.content?.$t || entry.summary?.$t || "No solution provided yet.";
+            
+            window[`fullPost_${index}`] = fullContent;
+            window[`titlePost_${index}`] = title;
+
+            container.innerHTML += `
+                <div class="qa-card-hover bg-white p-4 rounded-3xl border border-stone-100/80 shadow-sm space-y-3 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-warm-accent to-stone-300"></div>
+
+                    <div class="flex items-start justify-between gap-3 pt-1">
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 text-[10px] font-black uppercase tracking-wider border border-amber-200/50">
+                            Q&A #${index + 1}
+                        </span>
+                        <span class="text-[10px] text-warm-muted font-semibold flex items-center gap-1">
+                            <i class="fa-regular fa-clock text-[9px]"></i> Verified Solution
+                        </span>
+                    </div>
+
+                    <h4 class="text-xs font-extrabold text-warm-dark leading-snug tracking-tight">${title}</h4>
+                    
+                    <div class="relative max-h-12 overflow-hidden text-[11px] text-warm-muted leading-relaxed font-normal">
+                        ${fullContent}
+                        <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none"></div>
+                    </div>
+                    
+                    <div class="pt-2 border-t border-stone-100 flex items-center justify-between">
+                        <span class="text-[10px] text-warm-muted font-medium">Click below to read full solution</span>
+                        <button class="px-4 py-2 bg-warm-dark hover:bg-stone-800 text-white rounded-2xl text-[11px] font-bold transition-all duration-200 flex items-center gap-1.5 shadow-sm active:scale-95" onclick="viewFullQaArticle(${index})">
+                            <span>Read Answer</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function filterQaArticles() {
+        renderQaFeed(loadedQaEntries);
+    }
+
+    function viewFullQaArticle(id) {
+        let title = window[`titlePost_${id}`];
+        let body = window[`fullPost_${id}`];
+        
+        let overlay = document.createElement("div");
+        overlay.id = "qaFullViewOverlay";
+        overlay.className = "fixed inset-0 bg-warm-main z-50 overflow-y-auto p-5 flex flex-col space-y-4 max-w-md mx-auto";
+        
+        overlay.innerHTML = `
+            <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+                <button onclick="closeFullQaArticle()" class="px-3.5 py-2 bg-white rounded-2xl text-warm-dark font-bold text-xs shadow-sm flex items-center gap-2 hover:bg-stone-50 transition border border-stone-100">
+                    <i class="fa-solid fa-arrow-left text-xs"></i> Back
+                </button>
+                <span class="text-xs font-bold text-warm-dark">Q&A Solution</span>
+            </div>
+            
+            <div class="bg-white p-5 rounded-3xl border border-stone-100 shadow-sm space-y-3">
+                <h3 class="text-sm font-bold text-warm-dark leading-snug">🌷 ${title}</h3>
+                <div class="text-xs text-warm-dark leading-relaxed border-t border-stone-100 pt-3 space-y-2">
+                    ${body}
+                </div>
+            </div>`;
+        
+        document.body.appendChild(overlay);
+    }
+
+    function closeFullQaArticle() {
+        let overlay = document.getElementById("qaFullViewOverlay");
+        if (overlay) overlay.remove();
+    }
+
+    async function loadNotices() {
+        const noticeList = document.getElementById("noticeList");
+        const target = "https://www.tnteu.ac.in/notifications.php?nid=5";
+
+        noticeList.innerHTML = `
+            <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3 animate-pulse">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-accent"></i>
+                <p class="text-xs font-bold text-warm-dark">Fetching live notifications...</p>
+            </div>`;
+
+        try {
+            let res = await fetch(`${PROXY_URL}${encodeURIComponent(target)}`);
+            let html = await res.text();
+            let doc = new DOMParser().parseFromString(html, "text/html");
+            let notices = doc.querySelectorAll(".sectionWrapper ul.list.prim li a, table a");
+            let out = "";
+
+            let count = 0;
+            notices.forEach((a) => {
+                if (count >= 10) return;
+                let title = a.textContent.trim();
+                let href = a.getAttribute("href");
+                if (!title || !href || href === "#") return;
+
+                let url = href.startsWith("http") ? href : "https://www.tnteu.ac.in/" + href.replace(/^\//, "");
+                count++;
+
+                out += `
+                <div class="qa-card-hover bg-white p-4 rounded-3xl border border-stone-100/80 shadow-sm space-y-3 relative overflow-hidden">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-warm-subtle text-warm-dark flex-shrink-0 flex items-center justify-center font-extrabold text-xs shadow-inner">
+                            <i class="fa-solid fa-bell text-warm-dark text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="inline-block px-2.5 py-0.5 bg-rose-100 text-rose-800 text-[9px] font-black uppercase tracking-wider rounded-full border border-rose-200">
+                                    Notice #${count}
+                                </span>
+                                <span class="text-[9px] text-warm-muted font-semibold">Live Feed</span>
+                            </div>
+                            <h4 class="text-xs font-bold text-warm-dark leading-snug line-clamp-2">${title}</h4>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-stone-100">
+                        <span class="text-[10px] text-warm-muted font-medium">Official Document</span>
+                        <button onclick="openMozillaViewer('${url}')" class="px-3.5 py-1.5 bg-warm-dark text-white rounded-xl text-[11px] font-bold hover:bg-stone-800 transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm">
+                            <span>View Document</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </button>
+                    </div>
+                </div>`;
+            });
+
+            noticeList.innerHTML = out || `
+                <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-2">
+                    <i class="fa-solid fa-circle-info text-2xl text-warm-accent"></i>
+                    <p class="text-xs font-bold text-warm-dark">No live updates listed at this moment.</p>
+                </div>`;
+
+        } catch (err) {
+            noticeList.innerHTML = `
+                <div class="p-6 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3">
+                    <i class="fa-solid fa-shield-halved text-2xl text-amber-600"></i>
+                    <p class="text-xs font-bold text-warm-dark">Portal notices could not be fetched due to university host restrictions.</p>
+                    <a href="https://www.tnteu.ac.in/notifications.php" target="_blank" class="inline-block px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold">Open Portal Directly</a>
+                </div>`;
+        }
+    }
+
+    function renderVideos() {
+        const mainVid = VIDEOS_DATABASE[0];
+        document.getElementById('home-briefing-list').innerHTML = `
+            <div class="bg-white p-3 rounded-3xl shadow-sm border border-stone-100 space-y-2">
+                <div class="relative w-full rounded-2xl overflow-hidden aspect-video bg-stone-900">
+                    <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${mainVid.youtubeId}" title="${mainVid.title}" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <p class="text-xs font-bold text-warm-dark px-1">${mainVid.title}</p>
+            </div>`;
+
+        document.getElementById('all-videos-grid').innerHTML = VIDEOS_DATABASE.map(v => `
+            <div class="bg-white p-3.5 rounded-3xl shadow-sm border border-stone-100 space-y-2.5">
+                <div class="relative w-full rounded-2xl overflow-hidden aspect-video bg-stone-900">
+                    <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${v.youtubeId}" title="${v.title}" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <div class="flex justify-between items-center px-1">
+                    <h4 class="text-xs font-bold text-warm-dark">${v.title}</h4>
+                    <span class="text-[10px] text-warm-muted font-medium">${v.date}</span>
+                </div>
+            </div>`).join('');
+    }
+
+    function renderCirculars() {
+        const homeCirculars = CIRCULARS.slice(0, 2);
+        document.getElementById('home-circulars-list').innerHTML = homeCirculars.map(item => `
+            <div onclick="openMozillaViewer('${item.url}')" class="bg-white p-3.5 rounded-2xl border border-stone-100 flex items-center justify-between cursor-pointer hover:shadow-sm transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-warm-subtle text-warm-dark flex items-center justify-center">
+                        <i class="fa-solid fa-file-pdf text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-warm-dark block">${item.title}</span>
+                        <span class="text-[10px] text-warm-muted">${item.date}</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-stone-300 text-xs"></i>
+            </div>`).join('');
+
+        document.getElementById('all-circulars-grid').innerHTML = CIRCULARS.map(item => `
+            <div onclick="openMozillaViewer('${item.url}')" class="bg-white p-3.5 rounded-2xl border border-stone-100 flex items-center justify-between cursor-pointer hover:shadow-sm transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-warm-subtle text-warm-dark flex items-center justify-center">
+                        <i class="fa-solid fa-file-pdf text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-warm-dark block">${item.title}</span>
+                        <span class="text-[10px] text-warm-muted">${item.date}</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-stone-300 text-xs"></i>
+            </div>`).join('');
+    }
+
+    function renderNotes() {
+        const searchQuery = document.getElementById('notes-search').value.toLowerCase();
+        
+        const filtered = NOTES_DATABASE.filter(item => {
+            const matchesMedium = item.medium === currentUserData.medium;
+            const matchesSemester = item.semester === currentUserData.semester;
+            const matchesSearch = item.title.toLowerCase().includes(searchQuery);
+            return matchesMedium && matchesSemester && matchesSearch;
+        });
+
+        document.getElementById('notes-count').innerText = `${filtered.length} items`;
+
+        const container = document.getElementById('notes-list');
+        if(filtered.length === 0) {
+            container.innerHTML = `<p class="col-span-2 text-xs text-center text-warm-muted py-6">No study materials matching your profile filters.</p>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(item => {
+            const isDownloaded = downloadedFiles.has(item.id);
+            return `
+            <div class="bg-white p-3 rounded-3xl border border-stone-100 flex flex-col justify-between shadow-sm space-y-2">
+                <div class="relative w-full h-32 rounded-2xl overflow-hidden bg-warm-subtle">
+                    <img src="${item.img}" class="w-full h-full object-cover" alt="Author">
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-warm-dark truncate">${item.title}</h4>
+                    <p class="text-[10px] text-warm-muted mt-0.5">Sem ${item.semester} • ${item.medium}</p>
+                </div>
+
+                <div id="progress-container-${item.id}" class="hidden w-full bg-stone-100 rounded-full h-1 overflow-hidden">
+                    <div id="progress-bar-${item.id}" class="bg-warm-dark h-full w-0 transition-all"></div>
+                </div>
+
+                <div>
+                    ${isDownloaded 
+                        ? `<button onclick="openMozillaViewerFromOPFS('${item.id}.pdf')" class="w-full py-2 bg-emerald-100 text-emerald-800 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 shadow-sm">
+                             <i class="fa-solid fa-folder-open text-xs"></i> Open
+                           </button>`
+                        : `<button onclick="downloadPdfToOPFS('${item.id}', '${item.url}')" id="btn-dl-${item.id}" class="w-full py-2 bg-warm-dark hover:bg-stone-800 text-white rounded-xl text-[11px] font-black transition flex items-center justify-center gap-1.5 shadow-sm">
+                             <i class="fa-solid fa-download text-xs"></i> Download
+                           </button>`
+                    }
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function downloadPdfToOPFS(id, url) {
+        const progressBar = document.getElementById(`progress-bar-${id}`);
+        const progressContainer = document.getElementById(`progress-container-${id}`);
+        const button = document.getElementById(`btn-dl-${id}`);
+
+        if(button) button.disabled = true;
+        if(progressContainer) progressContainer.classList.remove('hidden');
+
+        try {
+            const response = await fetch(url);
+            const contentLength = response.headers.get('content-length');
+            const total = contentLength ? parseInt(contentLength, 10) : 0;
+            
+            let loaded = 0;
+            const reader = response.body.getReader();
+            const chunks = [];
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                loaded += value.length;
+
+                if (total && progressBar) {
+                    const progress = Math.round((loaded / total) * 100);
+                    progressBar.style.width = `${progress}%`;
+                } else if (progressBar) {
+                    progressBar.style.width = `50%`;
+                }
+            }
+
+            const blob = new Blob(chunks, { type: 'application/pdf' });
+            const arrayBuffer = await blob.arrayBuffer();
+
+            try {
+                const root = await getOPFSRoot();
+                const fileHandle = await root.getFileHandle(`${id}.pdf`, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(arrayBuffer);
+                await writable.close();
+            } catch(e) {}
+
+            downloadedFiles.add(id);
+            syncDownloadedList();
+            renderNotes();
+            updateStorageMetrics();
+
+        } catch (err) {
+            alert('Download error: ' + err.message);
+            if(button) button.disabled = false;
+            if(progressContainer) progressContainer.classList.add('hidden');
+        }
+    }
+
+    function openMozillaViewer(pdfUrl) {
+        const mozillaViewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
+        window.open(mozillaViewerUrl, '_blank');
+    }
+
+    async function openMozillaViewerFromOPFS(fileName) {
+        try {
+            const root = await getOPFSRoot();
+            const fileHandle = await root.getFileHandle(fileName);
+            const file = await fileHandle.getFile();
+            const blobUrl = URL.createObjectURL(file);
+            openMozillaViewer(blobUrl);
+        } catch (e) {
+            alert('Error opening file from storage');
+        }
+    }
+
+    async function syncDownloadedList() {
+        const pageContainer = document.getElementById('page-downloads-list');
+        const countBadge = document.getElementById('tab-downloads-count');
+        const badge = document.getElementById('download-badge');
+        
+        let html = '';
+        let count = 0;
+
+        try {
+            const root = await getOPFSRoot();
+            for await (const [name] of root.entries()) {
+                if (name.endsWith('.pdf')) {
+                    count++;
+                    const noteId = name.replace('.pdf', '');
+                    const noteItem = NOTES_DATABASE.find(n => n.id === noteId) || { title: name, semester: '-', medium: '-' };
+                    
+                    html += `
+                    <div class="bg-white p-3.5 rounded-2xl border border-stone-100 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-warm-subtle text-warm-dark flex items-center justify-center">
+                                <i class="fa-solid fa-file-pdf text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-warm-dark truncate max-w-[140px]">${noteItem.title}</h4>
+                                <p class="text-[10px] text-warm-muted">Sem ${noteItem.semester} • ${noteItem.medium}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openMozillaViewerFromOPFS('${name}')" class="px-3.5 py-1.5 bg-warm-dark text-white rounded-xl text-[10px] font-bold shadow-sm hover:bg-stone-800">Open</button>
+                            <button onclick="deleteOPFSFile('${name}')" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </div>`;
+                    downloadedFiles.add(noteId);
+                }
+            }
+        } catch(e) {}
+
+        countBadge.innerText = `${count} files`;
+
+        if (count > 0) {
+            badge.classList.remove('hidden');
+            pageContainer.innerHTML = html;
+        } else {
+            badge.classList.add('hidden');
+            pageContainer.innerHTML = `
+                <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-2">
+                    <div class="w-12 h-12 bg-warm-subtle text-warm-dark rounded-full flex items-center justify-center mx-auto">
+                        <i class="fa-solid fa-folder-open text-base"></i>
+                    </div>
+                    <p class="text-xs font-bold text-warm-dark">No Downloads Found</p>
+                    <p class="text-[11px] text-warm-muted">Downloaded PDF notes stored locally will be listed here.</p>
+                </div>`;
+        }
+    }
+
+    async function deleteOPFSFile(fileName) {
+        try {
+            const root = await getOPFSRoot();
+            await root.removeEntry(fileName);
+        } catch(e) {}
+        downloadedFiles.delete(fileName.replace('.pdf', ''));
+        await syncDownloadedList();
+        renderNotes();
+        updateStorageMetrics();
+    }
+
+    async function updateStorageMetrics() {
+        if (navigator.storage && navigator.storage.estimate) {
+            try {
+                const estimate = await navigator.storage.estimate();
+                const usedMB = (estimate.usage / (1024 * 1024)).toFixed(2);
+                const totalMB = (estimate.quota / (1024 * 1024)).toFixed(0);
+                const percentage = ((estimate.usage / estimate.quota) * 100).toFixed(1);
+
+                document.getElementById('opfs-usage-text').innerText = `${usedMB} MB / ${totalMB} MB`;
+                document.getElementById('opfs-bar').style.width = `${Math.max(percentage, 2)}%`;
+            } catch(e) {}
+        }
+    }
+
+    async function deleteAccount() {
+        if (confirm("Clear local storage and wipe profile data completely?")) {
+            try {
+                const root = await getOPFSRoot();
+                for await (const [name] of root.entries()) {
+                    await root.removeEntry(name);
+                }
+            } catch (e) {}
+            localStorage.clear();
+            currentUserData = null;
+            downloadedFiles.clear();
+            window.location.reload();
+        }
+    }
+
+    function toggleModal(id, show) {
+        document.getElementById(id).classList.toggle('hidden', !show);
+    }
+</script>
+</body>
+</html>
