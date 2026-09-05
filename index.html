@@ -1351,6 +1351,7 @@ function copyGeneratedLink() {
 }
 
 // 4. Auto-Routing & Content Highlighting on Load
+// Handles incoming shared deep links, navigates to target, and auto-opens content
 function handleDeepLinkRouting() {
     const params = new URLSearchParams(window.location.search);
     const type = params.get('type');
@@ -1358,7 +1359,7 @@ function handleDeepLinkRouting() {
 
     if (!type || !id) return;
 
-    // Navigate to target section
+    // 1. Navigate to designated section
     if (type === 'video' || type === 'circular') {
         switchTab('home');
     } else if (type === 'note') {
@@ -1369,32 +1370,94 @@ function handleDeepLinkRouting() {
         switchTab('qa');
     }
 
-    // Delay briefly to allow DOM elements to render before highlighting
+    // 2. Short delay to allow tab/DOM rendering before auto-opening content
     setTimeout(() => {
-        let targetElement = null;
-
-        if (type === 'qa') {
-            const index = id.replace('qa-', '');
-            viewFullQaArticle(index); // Opens Q&A Modal directly
-            return;
-        }
-
         if (type === 'video') {
-            targetElement = document.getElementById('home-briefing-list');
+            autoOpenAndPlayVideo(id);
+        } else if (type === 'circular') {
+            autoOpenCircularPdf(id);
         } else if (type === 'note') {
-            targetElement = document.getElementById(`progress-container-${id}`)?.closest('.bg-white');
+            autoOpenNotePdf(id);
         } else if (type === 'notice') {
-            targetElement = document.getElementById('noticeList')?.firstElementChild;
+            autoOpenNotice(id);
+        } else if (type === 'qa') {
+            const index = id.replace('qa-', '');
+            if (typeof viewFullQaArticle === 'function') {
+                viewFullQaArticle(index);
+            }
         }
+    }, 500);
+}
 
-        if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            targetElement.classList.add('ring-4', 'ring-warm-accent', 'transition-all', 'duration-500');
-            setTimeout(() => {
-                targetElement.classList.remove('ring-4', 'ring-warm-accent');
-            }, 4000);
+// Auto-open and play YouTube video in modal view
+function autoOpenAndPlayVideo(videoId) {
+    const video = VIDEOS_DATABASE.find(v => v.id === videoId);
+    if (!video) return;
+
+    // Convert standard YouTube URL to Embed URL with AutoPlay enabled
+    let embedUrl = video.youtubeUrl;
+    if (embedUrl.includes('watch?v=')) {
+        embedUrl = embedUrl.replace('watch?v=', 'embed/');
+    } else if (embedUrl.includes('youtu.be/')) {
+        embedUrl = embedUrl.replace('youtu.be/', 'www.youtube.com/embed/');
+    }
+    
+    // Append autoplay parameter
+    embedUrl += (embedUrl.includes('?') ? '&' : '?') + 'autoplay=1&enablejsapi=1';
+
+    // Inject iframe player into modal container and display
+    const videoModal = document.getElementById('modal-video-player');
+    const videoContainer = document.getElementById('video-player-container');
+    const videoTitle = document.getElementById('video-player-title');
+
+    if (videoModal && videoContainer) {
+        if (videoTitle) videoTitle.innerText = video.title;
+        videoContainer.innerHTML = `
+            <iframe 
+                src="${embedUrl}" 
+                class="w-full h-64 rounded-2xl shadow-lg" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>`;
+        toggleModal('modal-video-player', true);
+    }
+}
+
+// Auto-open PDF Circular in reader view
+function autoOpenCircularPdf(circularId) {
+    const circular = CIRCULARS.find(c => c.id === circularId);
+    if (circular && typeof openPdfViewer === 'function') {
+        openPdfViewer(circular.pdfUrl, circular.title);
+    }
+}
+
+// Auto-open Subject Note PDF in reader view
+function autoOpenNotePdf(noteId) {
+    const note = NOTES_DATABASE.find(n => n.id === noteId);
+    if (note && typeof openPdfViewer === 'function') {
+        openPdfViewer(note.pdfUrl, note.title);
+    }
+}
+
+// Auto-open specific University Notice Modal
+function autoOpenNotice(noticeId) {
+    if (typeof openNoticeModal === 'function') {
+        openNoticeModal(noticeId);
+    } else {
+        const noticeElem = document.getElementById(noticeId) || document.getElementById('noticeList')?.firstElementChild;
+        if (noticeElem) {
+            noticeElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            noticeElem.click();
         }
-    }, 600);
+    }
+}
+
+    // Helper to safely stop video audio on close
+function closeVideoModal() {
+    const videoContainer = document.getElementById('video-player-container');
+    if (videoContainer) videoContainer.innerHTML = '';
+    toggleModal('modal-video-player', false);
 }
 
     async function deleteAccount() {
@@ -1557,5 +1620,26 @@ function handleDeepLinkRouting() {
         }
     }
 </script>
+    <!-- Other app content and existing modals like #modal-admin -->
+
+    <!-- AUTOMATIC VIDEO PLAYER MODAL -->
+    <div id="modal-video-player" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-md shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 id="video-player-title" class="text-xs font-bold text-warm-dark truncate max-w-[80%]">Watch Video</h3>
+                <button onclick="closeVideoModal()" class="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center text-warm-dark font-bold text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <!-- Video Embed Container -->
+            <div id="video-player-container" class="w-full bg-black rounded-2xl overflow-hidden aspect-video flex items-center justify-center">
+            </div>
+        </div>
+    </div>
+
+   
+</body>
+</html>
 </body>
 </html>
