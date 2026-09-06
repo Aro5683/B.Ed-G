@@ -1032,15 +1032,18 @@
     }
 }
 
-async function viewDocInline(url) {
+function viewDocInline(url) {
     let viewer = document.getElementById("inlineDocViewer");
     
     if (!viewer) {
         viewer = document.createElement("div");
         viewer.id = "inlineDocViewer";
-        viewer.className = "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col p-2 sm:p-4";
+        viewer.className = "fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex flex-col p-2 sm:p-4";
         document.body.appendChild(viewer);
     }
+
+    // Encodes URL into Google Docs Viewer endpoint with embedded controls
+    const embedUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
 
     viewer.innerHTML = `
         <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b z-10">
@@ -1049,39 +1052,10 @@ async function viewDocInline(url) {
                 ✕
             </button>
         </div>
-        <div id="pdf-view-area" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-y-auto relative">
-            <div id="pdf-loading" class="flex flex-col items-center justify-center h-full gap-2 p-6">
-                <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
-                <p class="text-xs font-bold text-warm-dark">Loading document...</p>
-            </div>
+        <div class="w-full h-full bg-stone-100 rounded-b-2xl overflow-hidden relative">
+            <iframe src="${embedUrl}" class="w-full h-full border-0 rounded-b-2xl bg-white"></iframe>
         </div>
     `;
-
-    const viewArea = document.getElementById("pdf-view-area");
-
-    try {
-        // Fetch document through proxy as a Blob to bypass server security restrictions
-        const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
-        const response = await fetch(proxyUrl);
-        const blob = await response.blob();
-        
-        // Create local object URL for instant rendering
-        const blobUrl = URL.createObjectURL(blob);
-
-        viewArea.innerHTML = `
-            <iframe src="${blobUrl}#toolbar=0" class="w-full h-full border-0 rounded-b-2xl bg-white"></iframe>
-        `;
-    } catch (err) {
-        viewArea.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
-                <i class="fa-solid fa-triangle-exclamation text-2xl text-rose-500"></i>
-                <p class="text-xs font-bold text-stone-800">Direct preview blocked by origin server.</p>
-                <a href="${url}" target="_blank" class="px-4 py-2 bg-warm-dark text-white text-xs font-bold rounded-xl shadow-sm">
-                    Open Document
-                </a>
-            </div>
-        `;
-    }
 }
     function renderVideos() {
         const mainVid = VIDEOS_DATABASE[0];
