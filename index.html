@@ -16,6 +16,7 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 </script>
+    <script src="https://unpkg.com/pinch-zoom-js@2.3.5/dist/pinch-zoom.umd.js"></script>
 
     <!-- CSS & Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1037,44 +1038,35 @@ async function viewDocInline(url) {
     if (!viewer) {
         viewer = document.createElement("div");
         viewer.id = "inlineDocViewer";
-        viewer.className = "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col p-4";
+        viewer.className = "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col p-2 sm:p-4";
         document.body.appendChild(viewer);
     }
 
-    let currentScale = 1.0;
-
     viewer.innerHTML = `
-        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b gap-2">
+        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b z-10">
             <span class="text-xs font-bold text-warm-dark font-sans truncate">Document Preview</span>
-            <div class="flex items-center gap-1.5">
-                <button id="zoomOutBtn" class="px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg text-xs font-bold active:scale-95"> - </button>
-                <span id="zoomLevel" class="text-[10px] font-bold text-stone-600 min-w-[35px] text-center">100%</span>
-                <button id="zoomInBtn" class="px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg text-xs font-bold active:scale-95"> + </button>
-                <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-7 h-7 ml-2 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm active:scale-95">
-                    ✕
-                </button>
-            </div>
+            <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm active:scale-95">
+                ✕
+            </button>
         </div>
-        <div id="pdf-scroll-wrapper" class="w-full h-full rounded-b-2xl bg-stone-300 overflow-auto touch-pan-x touch-pan-y relative p-2">
-            <div id="pdf-container" class="origin-top-left transition-transform duration-100 min-w-full flex flex-col items-center gap-2">
+        <div id="pinch-wrapper" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-hidden relative">
+            <div id="pdf-container" class="w-full flex flex-col items-center gap-3 p-2">
                 <p id="pdf-loading" class="text-xs font-bold text-warm-dark my-auto pt-10">Loading document pages...</p>
             </div>
         </div>
     `;
 
-    // Zoom controls logic
     const pdfContainer = document.getElementById("pdf-container");
-    const zoomLevelDisplay = document.getElementById("zoomLevel");
+    const pinchWrapper = document.getElementById("pinch-wrapper");
 
-    const updateZoom = (newScale) => {
-        currentScale = Math.min(Math.max(0.8, newScale), 3.0); // Clamp zoom between 80% and 300%
-        pdfContainer.style.transform = `scale(${currentScale})`;
-        pdfContainer.style.width = `${100 / currentScale}%`;
-        zoomLevelDisplay.textContent = `${Math.round(currentScale * 100)}%`;
-    };
-
-    document.getElementById("zoomInBtn").onclick = () => updateZoom(currentScale + 0.25);
-    document.getElementById("zoomOutBtn").onclick = () => updateZoom(currentScale - 0.25);
+    // Initialize Pinch-To-Zoom gesture engine on touch devices
+    if (window.PinchZoom) {
+        new PinchZoom(pinchWrapper, {
+            draggableUnzoomed: false,
+            minZoom: 1,
+            maxZoom: 4
+        });
+    }
 
     try {
         const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
@@ -1083,13 +1075,13 @@ async function viewDocInline(url) {
 
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
             const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 1.5 });
+            const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for clear text on pinch zoom
 
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d");
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-            canvas.className = "w-full rounded shadow-sm bg-white pointer-events-auto";
+            canvas.className = "w-full rounded shadow bg-white";
 
             pdfContainer.appendChild(canvas);
 
@@ -1104,7 +1096,6 @@ async function viewDocInline(url) {
         `;
     }
 }
-
     function renderVideos() {
         const mainVid = VIDEOS_DATABASE[0];
         document.getElementById('home-briefing-list').innerHTML = `
