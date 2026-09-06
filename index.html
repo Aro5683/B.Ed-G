@@ -384,6 +384,8 @@
                     </div>
 
                     <div id="noticeList" class="space-y-3.5"></div>
+                    <!-- Container where the document will load directly into the page -->
+                  <div id="inlineDocViewerContainer" class="hidden my-6"></div>
                 </div>
 
                 <!-- VIEW: ACCOUNT & POLICY NAV -->
@@ -1028,28 +1030,44 @@
 }
 
 function viewDocInline(url) {
-    let viewer = document.getElementById("inlineDocViewer");
+    let container = document.getElementById("inlineDocViewerContainer");
     
-    // Create viewer overlay if missing
-    if (!viewer) {
-        viewer = document.createElement("div");
-        viewer.id = "inlineDocViewer";
-        viewer.className = "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col p-4";
-        document.body.appendChild(viewer);
+    // Fallback if the container isn't present in HTML
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "inlineDocViewerContainer";
+        const noticeList = document.getElementById("noticeList");
+        noticeList.parentNode.insertBefore(container, noticeList.nextSibling);
     }
 
-    // Google Docs Viewer renders PDFs and documents reliably inside iframes
     const iframeUrl = `https://aro5683.github.io/B.Ed-Viewer/web/viewer.html?file=${encodeURIComponent(url)}&embedded=true`;
 
-    viewer.innerHTML = `
-        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b">
-            <span class="text-xs font-bold text-warm-dark">Document Preview</span>
-            <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm">
-                ✕
+    // Make the container visible and populate embedded viewer inline
+    container.classList.remove("hidden");
+    container.className = "w-full my-6 bg-white rounded-3xl border border-stone-100 shadow-sm overflow-hidden flex flex-col";
+
+    container.innerHTML = `
+        <div class="flex justify-between items-center bg-stone-50 px-4 py-3 border-b border-stone-100">
+            <span class="text-xs font-bold text-warm-dark flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf text-rose-500"></i> Document Preview
+            </span>
+            <button onclick="closeInlineDocViewer()" class="px-3 py-1 bg-stone-200 text-stone-700 rounded-lg font-bold text-xs hover:bg-stone-300 transition-colors">
+                Close Viewer
             </button>
         </div>
-        <iframe src="${iframeUrl}" class="w-full h-full rounded-b-2xl bg-white border-0"></iframe>
+        <iframe src="${iframeUrl}" class="w-full h-[600px] bg-white border-0"></iframe>
     `;
+
+    // Smoothly scroll down to the embedded viewer
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeInlineDocViewer() {
+    const container = document.getElementById("inlineDocViewerContainer");
+    if (container) {
+        container.classList.add("hidden");
+        container.innerHTML = "";
+    }
 }
 
     function renderVideos() {
