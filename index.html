@@ -1037,38 +1037,43 @@ async function loadNotices() {
 }
 
 // Function to manage 3-ball bounce loading state before opening document
-async function openPdfWithLoader(url, btnId) {
-    const btn = document.getElementById(btnId);
-    if (!btn || btn.disabled) return;
+async function openPdfWithLoader(url, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container || container.getAttribute('data-loading') === 'true') return;
 
-    const btnText = btn.querySelector('.btn-text');
-    const btnIcon = btn.querySelector('.btn-icon');
-    const loader = btn.querySelector('.loader-balls');
+    const defaultIcon = container.querySelector('.default-icon');
+    const loader = container.querySelector('.loader-balls');
 
-    // Show 3-ball loader and disable button to prevent double-clicks
-    btn.disabled = true;
-    btnText.classList.add('hidden');
-    btnIcon.classList.add('hidden');
-    loader.classList.remove('hidden');
+    // 1. Open a blank window IMMEDIATELY on click to bypass browser popup blockers
+    const newTab = window.open('about:blank', '_blank');
+
+    // 2. Lock UI and show 3-ball bounce loader
+    container.setAttribute('data-loading', 'true');
+    container.classList.add('pointer-events-none', 'opacity-80');
+    if (defaultIcon) defaultIcon.classList.add('hidden');
+    if (loader) loader.classList.remove('hidden');
 
     try {
-        // Pre-fetch through proxy to ensure full download before opening tab
         const fetchUrl = typeof PROXY_URL !== 'undefined' ? `${PROXY_URL}${encodeURIComponent(url)}` : url;
         const res = await fetch(fetchUrl);
         const blob = await res.blob();
         
-        // Create a local URL for the fully loaded PDF/document
+        // 3. Update the opened tab's location once the PDF finishes downloading
         const blobUrl = URL.createObjectURL(blob);
-        window.open(blobUrl, '_blank');
+        if (newTab) {
+            newTab.location.href = blobUrl;
+        }
     } catch (e) {
-        // Fallback: If pre-fetch fails due to CORS/Proxy, open direct link in new tab
-        window.open(url, '_blank');
+        // Fallback: If pre-fetch fails, redirect the opened tab directly to the source URL
+        if (newTab) {
+            newTab.location.href = url;
+        }
     } finally {
-        // Reset button state
-        btn.disabled = false;
-        btnText.classList.remove('hidden');
-        btnIcon.classList.remove('hidden');
-        loader.classList.add('hidden');
+        // 4. Reset card UI state
+        container.removeAttribute('data-loading');
+        container.classList.remove('pointer-events-none', 'opacity-80');
+        if (defaultIcon) defaultIcon.classList.remove('hidden');
+        if (loader) loader.classList.add('hidden');
     }
 }
     function renderVideos() {
