@@ -1041,37 +1041,57 @@ async function viewDocInline(url) {
         document.body.appendChild(viewer);
     }
 
+    let currentScale = 1.0;
+
     viewer.innerHTML = `
-        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b">
-            <span class="text-xs font-bold text-warm-dark font-sans">Document Preview</span>
-            <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm hover:bg-stone-200 transition-colors">
-                ✕
-            </button>
+        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b gap-2">
+            <span class="text-xs font-bold text-warm-dark font-sans truncate">Document Preview</span>
+            <div class="flex items-center gap-1.5">
+                <button id="zoomOutBtn" class="px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg text-xs font-bold active:scale-95"> - </button>
+                <span id="zoomLevel" class="text-[10px] font-bold text-stone-600 min-w-[35px] text-center">100%</span>
+                <button id="zoomInBtn" class="px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg text-xs font-bold active:scale-95"> + </button>
+                <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-7 h-7 ml-2 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm active:scale-95">
+                    ✕
+                </button>
+            </div>
         </div>
-        <div id="pdf-container" class="w-full h-full rounded-b-2xl bg-stone-200 overflow-y-auto p-2 flex flex-col items-center gap-2">
-            <p id="pdf-loading" class="text-xs font-bold text-warm-dark my-auto">Loading document pages...</p>
+        <div id="pdf-scroll-wrapper" class="w-full h-full rounded-b-2xl bg-stone-300 overflow-auto touch-pan-x touch-pan-y relative p-2">
+            <div id="pdf-container" class="origin-top-left transition-transform duration-100 min-w-full flex flex-col items-center gap-2">
+                <p id="pdf-loading" class="text-xs font-bold text-warm-dark my-auto pt-10">Loading document pages...</p>
+            </div>
         </div>
     `;
 
+    // Zoom controls logic
+    const pdfContainer = document.getElementById("pdf-container");
+    const zoomLevelDisplay = document.getElementById("zoomLevel");
+
+    const updateZoom = (newScale) => {
+        currentScale = Math.min(Math.max(0.8, newScale), 3.0); // Clamp zoom between 80% and 300%
+        pdfContainer.style.transform = `scale(${currentScale})`;
+        pdfContainer.style.width = `${100 / currentScale}%`;
+        zoomLevelDisplay.textContent = `${Math.round(currentScale * 100)}%`;
+    };
+
+    document.getElementById("zoomInBtn").onclick = () => updateZoom(currentScale + 0.25);
+    document.getElementById("zoomOutBtn").onclick = () => updateZoom(currentScale - 0.25);
+
     try {
-        // Fetch through proxy to handle CORS restrictions on mobile
         const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
         const pdf = await pdfjsLib.getDocument(proxyUrl).promise;
-        const container = document.getElementById("pdf-container");
-        container.innerHTML = "";
+        pdfContainer.innerHTML = "";
 
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
             const page = await pdf.getPage(pageNum);
-            const scale = 1.5;
-            const viewport = page.getViewport({ scale });
+            const viewport = page.getViewport({ scale: 1.5 });
 
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d");
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-            canvas.className = "w-full max-w-full rounded shadow-sm bg-white";
+            canvas.className = "w-full rounded shadow-sm bg-white pointer-events-auto";
 
-            container.appendChild(canvas);
+            pdfContainer.appendChild(canvas);
 
             await page.render({
                 canvasContext: context,
@@ -1079,8 +1099,8 @@ async function viewDocInline(url) {
             }).promise;
         }
     } catch (err) {
-        document.getElementById("pdf-container").innerHTML = `
-            <p class="text-xs font-bold text-rose-600 my-auto">Failed to load document content inline.</p>
+        pdfContainer.innerHTML = `
+            <p class="text-xs font-bold text-rose-600 my-auto pt-10">Failed to load document content inline.</p>
         `;
     }
 }
