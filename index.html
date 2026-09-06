@@ -1042,26 +1042,48 @@ async function viewDocInline(url) {
         document.body.appendChild(viewer);
     }
 
+    let currentZoom = 100; // Base zoom percentage
+
     viewer.innerHTML = `
-        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b z-10">
-            <span class="text-xs font-bold text-warm-dark font-sans truncate">Document Preview</span>
-            <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm active:scale-95">
-                ✕
-            </button>
+        <div class="flex justify-between items-center bg-white p-2 sm:p-3 rounded-t-2xl border-b z-10">
+            <span class="text-xs font-bold text-warm-dark font-sans truncate ml-1 sm:ml-0">Document</span>
+            <div class="flex items-center gap-1.5">
+                <button id="btn-zoom-out" class="w-7 h-7 rounded-full bg-stone-100 text-stone-700 font-black text-sm active:scale-95">-</button>
+                <span id="zoom-text" class="text-[10px] font-bold text-stone-600 w-9 text-center">${currentZoom}%</span>
+                <button id="btn-zoom-in" class="w-7 h-7 rounded-full bg-stone-100 text-stone-700 font-black text-sm active:scale-95">+</button>
+                <div class="w-px h-4 bg-stone-300 mx-1"></div>
+                <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-7 h-7 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm active:scale-95">✕</button>
+            </div>
         </div>
-        <div id="pdf-scroll-area" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-y-auto p-2 flex flex-col items-center gap-3">
-            <div id="pdf-status" class="flex flex-col items-center gap-2 my-auto py-10">
-                <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
-                <p class="text-xs font-bold text-warm-dark">Fetching PDF binary...</p>
+        <div id="pdf-scroll-area" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-auto p-2 relative touch-pan-x touch-pan-y">
+            <div id="pdf-render-container" class="flex flex-col items-center gap-3 min-h-full pb-4">
+                <div id="pdf-status" class="flex flex-col items-center gap-2 my-auto pt-20">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
+                    <p class="text-xs font-bold text-warm-dark">Fetching PDF binary...</p>
+                </div>
             </div>
         </div>
     `;
 
-    const container = document.getElementById("pdf-scroll-area");
+    const container = document.getElementById("pdf-render-container");
     const status = document.getElementById("pdf-status");
+    const zoomText = document.getElementById("zoom-text");
+
+    // Dynamic Zoom Control Logic
+    const applyZoom = (newZoom) => {
+        currentZoom = Math.max(50, Math.min(newZoom, 300)); // Restrict zoom between 50% and 300%
+        zoomText.innerText = `${currentZoom}%`;
+        
+        const canvases = container.querySelectorAll("canvas");
+        canvases.forEach(canvas => {
+            canvas.style.width = `${currentZoom}%`; // Scales the image relative to screen width
+        });
+    };
+
+    document.getElementById("btn-zoom-in").onclick = () => applyZoom(currentZoom + 25);
+    document.getElementById("btn-zoom-out").onclick = () => applyZoom(currentZoom - 25);
 
     try {
-        // Step 1: Fetch PDF via proxy as raw binary ArrayBuffer
         const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error("HTTP Fetch Error");
@@ -1073,19 +1095,22 @@ async function viewDocInline(url) {
             <p class="text-xs font-bold text-warm-dark">Rendering document pages...</p>
         `;
 
-        // Step 2: Render PDF pages into HTML5 Canvas elements
         const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
         container.innerHTML = ""; // Clear status message
 
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale: 1.5 });
+            const viewport = page.getViewport({ scale: 2.0 }); // High base scale for sharp text when zoomed
             
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d");
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-            canvas.className = "w-full rounded-lg shadow-md bg-white max-w-full";
+            
+            // Base CSS styling for canvases
+            canvas.className = "rounded shadow-md bg-white transition-all duration-200 origin-top";
+            canvas.style.width = `${currentZoom}%`; // Apply current zoom state
+            canvas.style.maxWidth = "none"; // Disable max-width limits to allow unlimited horizontal scrolling
 
             container.appendChild(canvas);
 
@@ -1095,7 +1120,7 @@ async function viewDocInline(url) {
     } catch (err) {
         console.error("PDF Render Failed:", err);
         container.innerHTML = `
-            <div class="flex flex-col items-center gap-3 my-auto py-10 text-center px-4">
+            <div class="flex flex-col items-center gap-3 my-auto pt-20 text-center px-4">
                 <i class="fa-solid fa-circle-exclamation text-3xl text-rose-500"></i>
                 <p class="text-xs font-bold text-stone-800">Unable to stream PDF directly inside webview.</p>
                 <a href="${url}" target="_blank" class="px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold shadow-sm">
