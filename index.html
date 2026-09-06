@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B.Ed Guru</title>
+    <title>EduPortal - Modern Warm Aesthetics</title>
     
     <!-- PWA Meta Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -12,12 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="EduPortal">
     <link rel="apple-touch-icon" href="icon-192.svg">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-</script>
-<!-- Add PinchZoom Library -->
-<script src="https://unpkg.com/pinch-zoom-js@2.3.5/dist/pinch-zoom.umd.js"></script>
+
     <!-- CSS & Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -101,9 +96,9 @@
         </div>
 
         <div class="space-y-2">
-            <h1 class="text-2xl font-black text-warm-dark tracking-tight">B.Ed Guru App</h1>
+            <h1 class="text-2xl font-black text-warm-dark tracking-tight">EduPortal App</h1>
             <p class="text-xs text-warm-muted leading-relaxed">
-                Access verified study materials, semester Q&A, and University circulars offline.
+                Access verified study materials, semester Q&A, and campus circulars offline.
             </p>
         </div>
 
@@ -183,7 +178,7 @@
                         <label class="block text-[11px] font-black text-warm-dark uppercase tracking-wider">College Name *</label>
                         <div class="relative flex items-center">
                             <i class="fa-solid fa-building-columns absolute left-4 text-stone-400 text-xs"></i>
-                            <input type="text" id="reg-college" required placeholder="College Name" class="modern-input w-full pl-10 pr-4 py-3.5 rounded-2xl text-xs font-semibold text-warm-dark placeholder-stone-400 outline-none">
+                            <input type="text" id="reg-college" required placeholder="University / Campus Name" class="modern-input w-full pl-10 pr-4 py-3.5 rounded-2xl text-xs font-semibold text-warm-dark placeholder-stone-400 outline-none">
                         </div>
                     </div>
 
@@ -279,15 +274,15 @@
                 <div id="view-home" class="space-y-5">
                     <div>
                         <div class="flex justify-between items-center mb-2.5">
-                            <h3 class="text-xs font-bold text-warm-dark uppercase tracking-wider"></h3><br/>  <br/>
+                            <h3 class="text-xs font-bold text-warm-dark uppercase tracking-wider">Ongoing Briefing</h3>
                             <button onclick="switchTab('all-videos')" class="text-[11px] text-warm-muted hover:text-warm-dark font-bold">View All</button>
                         </div>
                         <div class="space-y-3" id="home-briefing-list"></div>
                     </div>
 
                     <div>
-                        <div class="flex justify-between items-center mb-2.5"><br/><br/>
-                            <h3 class="text-xs font-bold text-warm-dark uppercase tracking-wider">App Circular</h3>
+                        <div class="flex justify-between items-center mb-2.5">
+                            <h3 class="text-xs font-bold text-warm-dark uppercase tracking-wider">App Circulars</h3>
                             <button onclick="switchTab('all-circulars')" class="text-[11px] text-warm-muted hover:text-warm-dark font-bold">View All</button>
                         </div>
                         <div class="space-y-2.5" id="home-circulars-list"></div>
@@ -963,158 +958,75 @@
         if (overlay) overlay.remove();
     }
 
-async function loadNotices() {
-    const noticeList = document.getElementById("noticeList");
-    const target = "https://www.tnteu.ac.in/notifications.php?nid=5";
+    async function loadNotices() {
+        const noticeList = document.getElementById("noticeList");
+        const target = "https://www.tnteu.ac.in/notifications.php?nid=5";
 
-    noticeList.innerHTML = `
-        <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3 animate-pulse">
-            <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-accent"></i>
-            <p class="text-xs font-bold text-warm-dark">Fetching live notifications...</p>
-        </div>`;
-
-    try {
-        let res = await fetch(`${PROXY_URL}${encodeURIComponent(target)}`);
-        let html = await res.text();
-        let doc = new DOMParser().parseFromString(html, "text/html");
-        let notices = doc.querySelectorAll(".sectionWrapper ul.list.prim li a, table a");
-        let out = "";
-
-        let count = 0;
-        notices.forEach((a) => {
-            if (count >= 10) return;
-            let title = a.textContent.trim();
-            let href = a.getAttribute("href");
-            if (!title || !href || href === "#") return;
-
-            let url = href.startsWith("http") ? href : "https://www.tnteu.ac.in/" + href.replace(/^\//, "");
-            count++;
-
-            out += `
-            <div class="qa-card-hover bg-white p-4 rounded-3xl border border-stone-100/80 shadow-sm space-y-3 relative overflow-hidden">
-                <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-warm-subtle text-warm-dark flex-shrink-0 flex items-center justify-center font-extrabold text-xs shadow-inner">
-                        <i class="fa-solid fa-bell text-warm-dark text-sm"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="inline-block px-2.5 py-0.5 bg-rose-100 text-rose-800 text-[9px] font-black uppercase tracking-wider rounded-full border border-rose-200">
-                                Notice #${count}
-                            </span>
-                            <span class="text-[9px] text-warm-muted font-semibold">Live Feed</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-warm-dark leading-snug line-clamp-2">${title}</h4>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between pt-2 border-t border-stone-100">
-                    <span class="text-[10px] text-warm-muted font-medium">Official Document</span>
-                    <button onclick="viewDocInline('${url}')" class="px-3.5 py-1.5 bg-warm-dark text-white rounded-xl text-[11px] font-bold hover:bg-stone-800 transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm">
-                        <span>View Document</span>
-                        <i class="fa-solid fa-eye text-[9px]"></i>
-                    </button>
-                </div>
-            </div>`;
-        });
-
-        noticeList.innerHTML = out || `
-            <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-2">
-                <i class="fa-solid fa-circle-info text-2xl text-warm-accent"></i>
-                <p class="text-xs font-bold text-warm-dark">No live updates listed at this moment.</p>
-            </div>`;
-
-    } catch (err) {
         noticeList.innerHTML = `
-            <div class="p-6 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3">
-                <i class="fa-solid fa-shield-halved text-2xl text-amber-600"></i>
-                <p class="text-xs font-bold text-warm-dark">Portal notices could not be fetched due to university host restrictions.</p>
-                <a href="https://www.tnteu.ac.in/notifications.php" target="_blank" class="inline-block px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold">Open Portal Directly</a>
+            <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3 animate-pulse">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-accent"></i>
+                <p class="text-xs font-bold text-warm-dark">Fetching live notifications...</p>
             </div>`;
-    }
-}
 
-async function viewDocInline(url) {
-    let viewer = document.getElementById("inlineDocViewer");
-    
-    if (!viewer) {
-        viewer = document.createElement("div");
-        viewer.id = "inlineDocViewer";
-        viewer.className = "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col p-2 sm:p-4";
-        document.body.appendChild(viewer);
-    }
+        try {
+            let res = await fetch(`${PROXY_URL}${encodeURIComponent(target)}`);
+            let html = await res.text();
+            let doc = new DOMParser().parseFromString(html, "text/html");
+            let notices = doc.querySelectorAll(".sectionWrapper ul.list.prim li a, table a");
+            let out = "";
 
-    viewer.innerHTML = `
-        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b z-10">
-            <span class="text-xs font-bold text-warm-dark font-sans truncate">Document Preview</span>
-            <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm active:scale-95">
-                ✕
-            </button>
-        </div>
-        <div id="pinch-wrapper" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-auto relative touch-pan-x touch-pan-y">
-            <div id="pdf-container" class="w-full flex flex-col items-center gap-3 p-2 min-h-full">
-                <div id="pdf-status" class="flex flex-col items-center gap-2 my-auto py-16">
-                    <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
-                    <p class="text-xs font-bold text-warm-dark">Fetching PDF binary...</p>
-                </div>
-            </div>
-        </div>
-    `;
+            let count = 0;
+            notices.forEach((a) => {
+                if (count >= 10) return;
+                let title = a.textContent.trim();
+                let href = a.getAttribute("href");
+                if (!title || !href || href === "#") return;
 
-    const pdfContainer = document.getElementById("pdf-container");
-    const pinchWrapper = document.getElementById("pinch-wrapper");
+                let url = href.startsWith("http") ? href : "https://www.tnteu.ac.in/" + href.replace(/^\//, "");
+                count++;
 
-    try {
-        const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Network response error");
-        
-        const buffer = await response.arrayBuffer();
+                out += `
+                <div class="qa-card-hover bg-white p-4 rounded-3xl border border-stone-100/80 shadow-sm space-y-3 relative overflow-hidden">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-warm-subtle text-warm-dark flex-shrink-0 flex items-center justify-center font-extrabold text-xs shadow-inner">
+                            <i class="fa-solid fa-bell text-warm-dark text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="inline-block px-2.5 py-0.5 bg-rose-100 text-rose-800 text-[9px] font-black uppercase tracking-wider rounded-full border border-rose-200">
+                                    Notice #${count}
+                                </span>
+                                <span class="text-[9px] text-warm-muted font-semibold">Live Feed</span>
+                            </div>
+                            <h4 class="text-xs font-bold text-warm-dark leading-snug line-clamp-2">${title}</h4>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-stone-100">
+                        <span class="text-[10px] text-warm-muted font-medium">Official Document</span>
+                        <button onclick="openMozillaViewer('${url}')" class="px-3.5 py-1.5 bg-warm-dark text-white rounded-xl text-[11px] font-bold hover:bg-stone-800 transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm">
+                            <span>View Document</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </button>
+                    </div>
+                </div>`;
+            });
 
-        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-        pdfContainer.innerHTML = ""; // Clear loading indicator
+            noticeList.innerHTML = out || `
+                <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-2">
+                    <i class="fa-solid fa-circle-info text-2xl text-warm-accent"></i>
+                    <p class="text-xs font-bold text-warm-dark">No live updates listed at this moment.</p>
+                </div>`;
 
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 2.0 });
-
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            canvas.className = "w-full rounded shadow bg-white max-w-full";
-
-            pdfContainer.appendChild(canvas);
-
-            await page.render({
-                canvasContext: context,
-                viewport: viewport
-            }).promise;
+        } catch (err) {
+            noticeList.innerHTML = `
+                <div class="p-6 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3">
+                    <i class="fa-solid fa-shield-halved text-2xl text-amber-600"></i>
+                    <p class="text-xs font-bold text-warm-dark">Portal notices could not be fetched due to university host restrictions.</p>
+                    <a href="https://www.tnteu.ac.in/notifications.php" target="_blank" class="inline-block px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold">Open Portal Directly</a>
+                </div>`;
         }
-
-        // Initialize PinchZoom AFTER all canvases are mounted in DOM
-        if (window.PinchZoom) {
-            setTimeout(() => {
-                new PinchZoom(pinchWrapper, {
-                    draggableUnzoomed: false,
-                    minZoom: 1,
-                    maxZoom: 4,
-                    useScaling: true
-                });
-            }, 100);
-        }
-
-    } catch (err) {
-        console.error("PDF Load Error:", err);
-        pdfContainer.innerHTML = `
-            <div class="flex flex-col items-center gap-3 my-auto py-16 px-4 text-center">
-                <i class="fa-solid fa-circle-exclamation text-3xl text-rose-500"></i>
-                <p class="text-xs font-bold text-stone-800">Unable to load document content inline.</p>
-                <a href="${url}" target="_blank" class="px-4 py-2 bg-warm-dark text-white text-xs font-bold rounded-xl shadow-sm">
-                    Open File Directly
-                </a>
-            </div>
-        `;
     }
-}
+
     function renderVideos() {
         const mainVid = VIDEOS_DATABASE[0];
         document.getElementById('home-briefing-list').innerHTML = `
@@ -1273,7 +1185,7 @@ async function viewDocInline(url) {
 
     function openMozillaViewer(pdfUrl) {
         const mozillaViewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
-        window.open(mozillaViewerUrl, '_self');
+        window.open(mozillaViewerUrl, '_blank');
     }
 
     async function openMozillaViewerFromOPFS(fileName) {
@@ -1478,14 +1390,22 @@ function handleDeepLinkRouting() {
 }
 
 // Auto-open and play YouTube video in modal view
-// Auto-open and play YouTube video in modal view
 function autoOpenAndPlayVideo(videoId) {
     const video = VIDEOS_DATABASE.find(v => v.id === videoId);
     if (!video) return;
 
-    // Use correct 'youtubeId' property from VIDEOS_DATABASE
-    const embedUrl = `https://www.youtube.com/embed/${video.youtubeId}?autoplay=1&enablejsapi=1`;
+    // Convert standard YouTube URL to Embed URL with AutoPlay enabled
+    let embedUrl = video.youtubeUrl;
+    if (embedUrl.includes('watch?v=')) {
+        embedUrl = embedUrl.replace('watch?v=', 'embed/');
+    } else if (embedUrl.includes('youtu.be/')) {
+        embedUrl = embedUrl.replace('youtu.be/', 'www.youtube.com/embed/');
+    }
+    
+    // Append autoplay parameter
+    embedUrl += (embedUrl.includes('?') ? '&' : '?') + 'autoplay=1&enablejsapi=1';
 
+    // Inject iframe player into modal container and display
     const videoModal = document.getElementById('modal-video-player');
     const videoContainer = document.getElementById('video-player-container');
     const videoTitle = document.getElementById('video-player-title');
@@ -1507,28 +1427,32 @@ function autoOpenAndPlayVideo(videoId) {
 // Auto-open PDF Circular in reader view
 function autoOpenCircularPdf(circularId) {
     const circular = CIRCULARS.find(c => c.id === circularId);
-    if (circular && typeof openMozillaViewer === 'function') {
-        openMozillaViewer(circular.url);
+    if (circular && typeof openPdfViewer === 'function') {
+        openPdfViewer(circular.pdfUrl, circular.title);
     }
 }
 
 // Auto-open Subject Note PDF in reader view
 function autoOpenNotePdf(noteId) {
     const note = NOTES_DATABASE.find(n => n.id === noteId);
-    if (note && typeof openMozillaViewer === 'function') {
-        openMozillaViewer(note.url);
+    if (note && typeof openPdfViewer === 'function') {
+        openPdfViewer(note.pdfUrl, note.title);
     }
 }
 
 // Auto-open specific University Notice Modal
 function autoOpenNotice(noticeId) {
-    const noticeElem = document.getElementById(noticeId) || document.getElementById('noticeList')?.firstElementChild;
-    if (noticeElem) {
-        noticeElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const viewBtn = noticeElem.querySelector('button');
-        if (viewBtn) viewBtn.click();
+    if (typeof openNoticeModal === 'function') {
+        openNoticeModal(noticeId);
+    } else {
+        const noticeElem = document.getElementById(noticeId) || document.getElementById('noticeList')?.firstElementChild;
+        if (noticeElem) {
+            noticeElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            noticeElem.click();
+        }
     }
 }
+
     // Helper to safely stop video audio on close
 function closeVideoModal() {
     const videoContainer = document.getElementById('video-player-container');
