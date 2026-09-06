@@ -1,4 +1,4 @@
-const CACHE_NAME = 'eduportal-dynamic-v1';
+const CACHE_NAME = 'eduportal-dynamic-v3';
 
 // Static assets to pre-cache for full offline rendering
 const ASSETS_TO_CACHE = [
