@@ -12,6 +12,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="EduPortal">
     <link rel="apple-touch-icon" href="icon-192.svg">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
 
     <!-- CSS & Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -281,7 +285,7 @@
                     </div>
 
                     <div>
-                        <div class="flex justify-between items-center mb-2.5"><br/>
+                        <div class="flex justify-between items-center mb-2.5"><br/><br/>
                             <h3 class="text-xs font-bold text-warm-dark uppercase tracking-wider">App Circulars</h3>
                             <button onclick="switchTab('all-circulars')" class="text-[11px] text-warm-muted hover:text-warm-dark font-bold">View All</button>
                         </div>
@@ -1027,19 +1031,15 @@
     }
 }
 
-function viewDocInline(url) {
+async function viewDocInline(url) {
     let viewer = document.getElementById("inlineDocViewer");
     
-    // Create viewer overlay if missing
     if (!viewer) {
         viewer = document.createElement("div");
         viewer.id = "inlineDocViewer";
         viewer.className = "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col p-4";
         document.body.appendChild(viewer);
     }
-
-    // Append native PDF toolbar restrictions (#toolbar=0&navpanes=0)
-    const pdfUrl = `${url}#toolbar=0&navpanes=0&scrollbar=0`;
 
     viewer.innerHTML = `
         <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b">
@@ -1048,12 +1048,42 @@ function viewDocInline(url) {
                 ✕
             </button>
         </div>
-        <object data="${pdfUrl}" type="application/pdf" class="w-full h-full rounded-b-2xl bg-white">
-            <embed src="${pdfUrl}" type="application/pdf" class="w-full h-full rounded-b-2xl" />
-        </object>
+        <div id="pdf-container" class="w-full h-full rounded-b-2xl bg-stone-200 overflow-y-auto p-2 flex flex-col items-center gap-2">
+            <p id="pdf-loading" class="text-xs font-bold text-warm-dark my-auto">Loading document pages...</p>
+        </div>
     `;
-}
 
+    try {
+        // Fetch through proxy to handle CORS restrictions on mobile
+        const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
+        const pdf = await pdfjsLib.getDocument(proxyUrl).promise;
+        const container = document.getElementById("pdf-container");
+        container.innerHTML = "";
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const scale = 1.5;
+            const viewport = page.getViewport({ scale });
+
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            canvas.className = "w-full max-w-full rounded shadow-sm bg-white";
+
+            container.appendChild(canvas);
+
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+        }
+    } catch (err) {
+        document.getElementById("pdf-container").innerHTML = `
+            <p class="text-xs font-bold text-rose-600 my-auto">Failed to load document content inline.</p>
+        `;
+    }
+}
 
     function renderVideos() {
         const mainVid = VIDEOS_DATABASE[0];
