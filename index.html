@@ -12,12 +12,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="EduPortal">
     <link rel="apple-touch-icon" href="icon-192.svg">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 </script>
-    <script src="https://unpkg.com/pinch-zoom-js@2.3.5/dist/pinch-zoom.umd.js"></script>
-
+<!-- Add PinchZoom Library -->
+<script src="https://unpkg.com/pinch-zoom-js@2.3.5/dist/pinch-zoom.umd.js"></script>
     <!-- CSS & Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -1042,22 +1042,16 @@ async function viewDocInline(url) {
         document.body.appendChild(viewer);
     }
 
-    let currentZoom = 100; // Base zoom percentage
-
     viewer.innerHTML = `
-        <div class="flex justify-between items-center bg-white p-2 sm:p-3 rounded-t-2xl border-b z-10">
-            <span class="text-xs font-bold text-warm-dark font-sans truncate ml-1 sm:ml-0">Document</span>
-            <div class="flex items-center gap-1.5">
-                <button id="btn-zoom-out" class="w-7 h-7 rounded-full bg-stone-100 text-stone-700 font-black text-sm active:scale-95">-</button>
-                <span id="zoom-text" class="text-[10px] font-bold text-stone-600 w-9 text-center">${currentZoom}%</span>
-                <button id="btn-zoom-in" class="w-7 h-7 rounded-full bg-stone-100 text-stone-700 font-black text-sm active:scale-95">+</button>
-                <div class="w-px h-4 bg-stone-300 mx-1"></div>
-                <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-7 h-7 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm active:scale-95">✕</button>
-            </div>
+        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b z-10">
+            <span class="text-xs font-bold text-warm-dark font-sans truncate">Document Preview</span>
+            <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm active:scale-95">
+                ✕
+            </button>
         </div>
-        <div id="pdf-scroll-area" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-auto p-2 relative touch-pan-x touch-pan-y">
-            <div id="pdf-render-container" class="flex flex-col items-center gap-3 min-h-full pb-4">
-                <div id="pdf-status" class="flex flex-col items-center gap-2 my-auto pt-20">
+        <div id="pinch-wrapper" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-y-auto relative">
+            <div id="pdf-container" class="w-full flex flex-col items-center gap-3 p-2 min-h-full">
+                <div id="pdf-status" class="flex flex-col items-center gap-2 my-auto py-16">
                     <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
                     <p class="text-xs font-bold text-warm-dark">Fetching PDF binary...</p>
                 </div>
@@ -1065,66 +1059,55 @@ async function viewDocInline(url) {
         </div>
     `;
 
-    const container = document.getElementById("pdf-render-container");
-    const status = document.getElementById("pdf-status");
-    const zoomText = document.getElementById("zoom-text");
+    const pdfContainer = document.getElementById("pdf-container");
+    const pinchWrapper = document.getElementById("pinch-wrapper");
 
-    // Dynamic Zoom Control Logic
-    const applyZoom = (newZoom) => {
-        currentZoom = Math.max(50, Math.min(newZoom, 300)); // Restrict zoom between 50% and 300%
-        zoomText.innerText = `${currentZoom}%`;
-        
-        const canvases = container.querySelectorAll("canvas");
-        canvases.forEach(canvas => {
-            canvas.style.width = `${currentZoom}%`; // Scales the image relative to screen width
+    // Enable Touch Pinch-To-Zoom and Dragging
+    if (window.PinchZoom) {
+        new PinchZoom(pinchWrapper, {
+            draggableUnzoomed: false,
+            minZoom: 1,
+            maxZoom: 4,
+            useScaling: true
         });
-    };
-
-    document.getElementById("btn-zoom-in").onclick = () => applyZoom(currentZoom + 25);
-    document.getElementById("btn-zoom-out").onclick = () => applyZoom(currentZoom - 25);
+    }
 
     try {
         const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("HTTP Fetch Error");
+        if (!response.ok) throw new Error("Network response error");
         
         const buffer = await response.arrayBuffer();
 
-        status.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
-            <p class="text-xs font-bold text-warm-dark">Rendering document pages...</p>
-        `;
-
         const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-        container.innerHTML = ""; // Clear status message
+        pdfContainer.innerHTML = ""; // Clear loading indicator
 
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale: 2.0 }); // High base scale for sharp text when zoomed
-            
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            // Render at high scale (2.5) so text remains crisp when pinch-zoomed on high-density mobile screens
+            const viewport = page.getViewport({ scale: 2.5 });
+
             const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
+            const context = canvas.getContext("2d");
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-            
-            // Base CSS styling for canvases
-            canvas.className = "rounded shadow-md bg-white transition-all duration-200 origin-top";
-            canvas.style.width = `${currentZoom}%`; // Apply current zoom state
-            canvas.style.maxWidth = "none"; // Disable max-width limits to allow unlimited horizontal scrolling
+            canvas.className = "w-full rounded shadow bg-white max-w-full";
 
-            container.appendChild(canvas);
+            pdfContainer.appendChild(canvas);
 
-            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
         }
-
     } catch (err) {
-        console.error("PDF Render Failed:", err);
-        container.innerHTML = `
-            <div class="flex flex-col items-center gap-3 my-auto pt-20 text-center px-4">
+        console.error("PDF Load Error:", err);
+        pdfContainer.innerHTML = `
+            <div class="flex flex-col items-center gap-3 my-auto py-16 px-4 text-center">
                 <i class="fa-solid fa-circle-exclamation text-3xl text-rose-500"></i>
-                <p class="text-xs font-bold text-stone-800">Unable to stream PDF directly inside webview.</p>
-                <a href="${url}" target="_blank" class="px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold shadow-sm">
-                    Open PDF File Directly
+                <p class="text-xs font-bold text-stone-800">Unable to load document content inline.</p>
+                <a href="${url}" target="_blank" class="px-4 py-2 bg-warm-dark text-white text-xs font-bold rounded-xl shadow-sm">
+                    Open File Directly
                 </a>
             </div>
         `;
