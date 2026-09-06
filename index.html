@@ -1040,7 +1040,7 @@ function viewDocInline(url) {
         noticeList.parentNode.insertBefore(container, noticeList.nextSibling);
     }
 
-  const iframeUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+  const iframeUrl = `${encodeURIComponent(url)}&embedded=true`;
 
     // Make the container visible and populate embedded viewer inline
     container.classList.remove("hidden");
