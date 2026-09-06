@@ -985,6 +985,8 @@ async function loadNotices() {
             let url = href.startsWith("http") ? href : "https://www.tnteu.ac.in/" + href.replace(/^\//, "");
             count++;
 
+            const btnId = `btn-doc-${count}`;
+
             out += `
             <div class="qa-card-hover bg-white p-4 rounded-3xl border border-stone-100/80 shadow-sm space-y-3 relative overflow-hidden">
                 <div class="flex items-start gap-3">
@@ -1003,10 +1005,17 @@ async function loadNotices() {
                 </div>
                 <div class="flex items-center justify-between pt-2 border-t border-stone-100">
                     <span class="text-[10px] text-warm-muted font-medium">Official Document</span>
-                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 bg-warm-dark text-white rounded-xl text-[11px] font-bold hover:bg-stone-800 transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm">
-                        <span>View Document</span>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                    </a>
+                    <button id="${btnId}" onclick="openPdfWithLoader('${url}', '${btnId}')" class="px-3.5 py-1.5 bg-warm-dark text-white rounded-xl text-[11px] font-bold hover:bg-stone-800 transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm min-w-[120px] justify-center">
+                        <span class="btn-text">View Document</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px] btn-icon"></i>
+                        
+                        <!-- 3-Ball Bounce Loader (Hidden by default) -->
+                        <div class="loader-balls hidden flex items-center gap-1 py-1">
+                            <div class="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                            <div class="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div class="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
+                        </div>
+                    </button>
                 </div>
             </div>`;
         });
@@ -1024,6 +1033,42 @@ async function loadNotices() {
                 <p class="text-xs font-bold text-warm-dark">Portal notices could not be fetched due to university host restrictions.</p>
                 <a href="https://www.tnteu.ac.in/notifications.php" target="_blank" class="inline-block px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold">Open Portal Directly</a>
             </div>`;
+    }
+}
+
+// Function to manage 3-ball bounce loading state before opening document
+async function openPdfWithLoader(url, btnId) {
+    const btn = document.getElementById(btnId);
+    if (!btn || btn.disabled) return;
+
+    const btnText = btn.querySelector('.btn-text');
+    const btnIcon = btn.querySelector('.btn-icon');
+    const loader = btn.querySelector('.loader-balls');
+
+    // Show 3-ball loader and disable button to prevent double-clicks
+    btn.disabled = true;
+    btnText.classList.add('hidden');
+    btnIcon.classList.add('hidden');
+    loader.classList.remove('hidden');
+
+    try {
+        // Pre-fetch through proxy to ensure full download before opening tab
+        const fetchUrl = typeof PROXY_URL !== 'undefined' ? `${PROXY_URL}${encodeURIComponent(url)}` : url;
+        const res = await fetch(fetchUrl);
+        const blob = await res.blob();
+        
+        // Create a local URL for the fully loaded PDF/document
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+    } catch (e) {
+        // Fallback: If pre-fetch fails due to CORS/Proxy, open direct link in new tab
+        window.open(url, '_blank');
+    } finally {
+        // Reset button state
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        btnIcon.classList.remove('hidden');
+        loader.classList.add('hidden');
     }
 }
     function renderVideos() {
