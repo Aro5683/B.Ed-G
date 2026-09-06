@@ -958,74 +958,102 @@
         if (overlay) overlay.remove();
     }
 
-    async function loadNotices() {
-        const noticeList = document.getElementById("noticeList");
-        const target = "https://www.tnteu.ac.in/notifications.php?nid=5";
+  async function loadNotices() {
+    const noticeList = document.getElementById("noticeList");
+    const target = "https://www.tnteu.ac.in/notifications.php?nid=5";
 
-        noticeList.innerHTML = `
-            <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3 animate-pulse">
-                <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-accent"></i>
-                <p class="text-xs font-bold text-warm-dark">Fetching live notifications...</p>
+    noticeList.innerHTML = `
+        <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3 animate-pulse">
+            <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-accent"></i>
+            <p class="text-xs font-bold text-warm-dark">Fetching live notifications...</p>
+        </div>`;
+
+    try {
+        let res = await fetch(`${PROXY_URL}${encodeURIComponent(target)}`);
+        let html = await res.text();
+        let doc = new DOMParser().parseFromString(html, "text/html");
+        let notices = doc.querySelectorAll(".sectionWrapper ul.list.prim li a, table a");
+        let out = "";
+
+        let count = 0;
+        notices.forEach((a) => {
+            if (count >= 10) return;
+            let title = a.textContent.trim();
+            let href = a.getAttribute("href");
+            if (!title || !href || href === "#") return;
+
+            let url = href.startsWith("http") ? href : "https://www.tnteu.ac.in/" + href.replace(/^\//, "");
+            count++;
+
+            out += `
+            <div class="qa-card-hover bg-white p-4 rounded-3xl border border-stone-100/80 shadow-sm space-y-3 relative overflow-hidden">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-warm-subtle text-warm-dark flex-shrink-0 flex items-center justify-center font-extrabold text-xs shadow-inner">
+                        <i class="fa-solid fa-bell text-warm-dark text-sm"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="inline-block px-2.5 py-0.5 bg-rose-100 text-rose-800 text-[9px] font-black uppercase tracking-wider rounded-full border border-rose-200">
+                                Notice #${count}
+                            </span>
+                            <span class="text-[9px] text-warm-muted font-semibold">Live Feed</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-warm-dark leading-snug line-clamp-2">${title}</h4>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-stone-100">
+                    <span class="text-[10px] text-warm-muted font-medium">Official Document</span>
+                    <button onclick="viewDocInline('${url}')" class="px-3.5 py-1.5 bg-warm-dark text-white rounded-xl text-[11px] font-bold hover:bg-stone-800 transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm">
+                        <span>View Document</span>
+                        <i class="fa-solid fa-eye text-[9px]"></i>
+                    </button>
+                </div>
+            </div>`;
+        });
+
+        noticeList.innerHTML = out || `
+            <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-2">
+                <i class="fa-solid fa-circle-info text-2xl text-warm-accent"></i>
+                <p class="text-xs font-bold text-warm-dark">No live updates listed at this moment.</p>
             </div>`;
 
-        try {
-            let res = await fetch(`${PROXY_URL}${encodeURIComponent(target)}`);
-            let html = await res.text();
-            let doc = new DOMParser().parseFromString(html, "text/html");
-            let notices = doc.querySelectorAll(".sectionWrapper ul.list.prim li a, table a");
-            let out = "";
-
-            let count = 0;
-            notices.forEach((a) => {
-                if (count >= 10) return;
-                let title = a.textContent.trim();
-                let href = a.getAttribute("href");
-                if (!title || !href || href === "#") return;
-
-                let url = href.startsWith("http") ? href : "https://www.tnteu.ac.in/" + href.replace(/^\//, "");
-                count++;
-
-                out += `
-                <div class="qa-card-hover bg-white p-4 rounded-3xl border border-stone-100/80 shadow-sm space-y-3 relative overflow-hidden">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-warm-subtle text-warm-dark flex-shrink-0 flex items-center justify-center font-extrabold text-xs shadow-inner">
-                            <i class="fa-solid fa-bell text-warm-dark text-sm"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="inline-block px-2.5 py-0.5 bg-rose-100 text-rose-800 text-[9px] font-black uppercase tracking-wider rounded-full border border-rose-200">
-                                    Notice #${count}
-                                </span>
-                                <span class="text-[9px] text-warm-muted font-semibold">Live Feed</span>
-                            </div>
-                            <h4 class="text-xs font-bold text-warm-dark leading-snug line-clamp-2">${title}</h4>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2 border-t border-stone-100">
-                        <span class="text-[10px] text-warm-muted font-medium">Official Document</span>
-                        <button onclick="${url}" class="px-3.5 py-1.5 bg-warm-dark text-white rounded-xl text-[11px] font-bold hover:bg-stone-800 transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm">
-                            <span>View Document</span>
-                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                        </button>
-                    </div>
-                </div>`;
-            });
-
-            noticeList.innerHTML = out || `
-                <div class="p-8 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-2">
-                    <i class="fa-solid fa-circle-info text-2xl text-warm-accent"></i>
-                    <p class="text-xs font-bold text-warm-dark">No live updates listed at this moment.</p>
-                </div>`;
-
-        } catch (err) {
-            noticeList.innerHTML = `
-                <div class="p-6 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3">
-                    <i class="fa-solid fa-shield-halved text-2xl text-amber-600"></i>
-                    <p class="text-xs font-bold text-warm-dark">Portal notices could not be fetched due to university host restrictions.</p>
-                    <a href="https://www.tnteu.ac.in/notifications.php" target="_blank" class="inline-block px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold">Open Portal Directly</a>
-                </div>`;
-        }
+    } catch (err) {
+        noticeList.innerHTML = `
+            <div class="p-6 text-center bg-white rounded-3xl border border-stone-100 shadow-sm space-y-3">
+                <i class="fa-solid fa-shield-halved text-2xl text-amber-600"></i>
+                <p class="text-xs font-bold text-warm-dark">Portal notices could not be fetched due to university host restrictions.</p>
+                <a href="https://www.tnteu.ac.in/notifications.php" target="_blank" class="inline-block px-4 py-2 bg-warm-dark text-white rounded-xl text-xs font-bold">Open Portal Directly</a>
+            </div>`;
     }
+}
+
+function viewDocInline(url) {
+    let viewer = document.getElementById("inlineDocViewer");
+    
+    // Create viewer overlay if missing
+    if (!viewer) {
+        viewer = document.createElement("div");
+        viewer.id = "inlineDocViewer";
+        viewer.className = "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col p-4";
+        document.body.appendChild(viewer);
+    }
+
+    // Append native PDF toolbar restrictions (#toolbar=0&navpanes=0)
+    const pdfUrl = `${url}#toolbar=0&navpanes=0&scrollbar=0`;
+
+    viewer.innerHTML = `
+        <div class="flex justify-between items-center bg-white p-3 rounded-t-2xl border-b">
+            <span class="text-xs font-bold text-warm-dark font-sans">Document Preview</span>
+            <button onclick="document.getElementById('inlineDocViewer').remove()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-sm hover:bg-stone-200 transition-colors">
+                ✕
+            </button>
+        </div>
+        <object data="${pdfUrl}" type="application/pdf" class="w-full h-full rounded-b-2xl bg-white">
+            <embed src="${pdfUrl}" type="application/pdf" class="w-full h-full rounded-b-2xl" />
+        </object>
+    `;
+}
+
 
     function renderVideos() {
         const mainVid = VIDEOS_DATABASE[0];
