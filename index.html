@@ -1049,68 +1049,35 @@ async function viewDocInline(url) {
                 ✕
             </button>
         </div>
-        <div id="pinch-wrapper" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-y-auto relative">
-            <div id="pdf-container" class="w-full flex flex-col items-center gap-3 p-2">
-                <div id="pdf-loading" class="flex flex-col items-center gap-2 my-auto pt-16">
-                    <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
-                    <p class="text-xs font-bold text-warm-dark">Downloading PDF document...</p>
-                </div>
+        <div id="pdf-view-area" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-y-auto relative">
+            <div id="pdf-loading" class="flex flex-col items-center justify-center h-full gap-2 p-6">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
+                <p class="text-xs font-bold text-warm-dark">Loading document...</p>
             </div>
         </div>
     `;
 
-    const pdfContainer = document.getElementById("pdf-container");
-    const pinchWrapper = document.getElementById("pinch-wrapper");
-
-    // Initialize Pinch-To-Zoom gesture engine
-    if (window.PinchZoom) {
-        new PinchZoom(pinchWrapper, {
-            draggableUnzoomed: false,
-            minZoom: 1,
-            maxZoom: 4
-        });
-    }
+    const viewArea = document.getElementById("pdf-view-area");
 
     try {
-        // Step 1: Fetch PDF directly as ArrayBuffer via PROXY_URL
+        // Fetch document through proxy as a Blob to bypass server security restrictions
         const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Network response was not ok");
+        const blob = await response.blob();
         
-        const arrayBuffer = await response.arrayBuffer();
+        // Create local object URL for instant rendering
+        const blobUrl = URL.createObjectURL(blob);
 
-        // Step 2: Pass raw binary buffer directly into PDF.js
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-        const pdf = await loadingTask.promise;
-        
-        pdfContainer.innerHTML = ""; // Clear loading state
-
-        // Step 3: Render pages
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 1.8 });
-
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            canvas.className = "w-full rounded shadow bg-white";
-
-            pdfContainer.appendChild(canvas);
-
-            await page.render({
-                canvasContext: context,
-                viewport: viewport
-            }).promise;
-        }
+        viewArea.innerHTML = `
+            <iframe src="${blobUrl}#toolbar=0" class="w-full h-full border-0 rounded-b-2xl bg-white"></iframe>
+        `;
     } catch (err) {
-        console.error("PDF Load Error:", err);
-        pdfContainer.innerHTML = `
-            <div class="flex flex-col items-center gap-3 my-auto pt-16 px-4 text-center">
+        viewArea.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
                 <i class="fa-solid fa-triangle-exclamation text-2xl text-rose-500"></i>
-                <p class="text-xs font-bold text-stone-800">Unable to load document inline.</p>
+                <p class="text-xs font-bold text-stone-800">Direct preview blocked by origin server.</p>
                 <a href="${url}" target="_blank" class="px-4 py-2 bg-warm-dark text-white text-xs font-bold rounded-xl shadow-sm">
-                    Open File Directly
+                    Open Document
                 </a>
             </div>
         `;
