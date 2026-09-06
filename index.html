@@ -1049,7 +1049,7 @@ async function viewDocInline(url) {
                 ✕
             </button>
         </div>
-        <div id="pinch-wrapper" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-y-auto relative">
+        <div id="pinch-wrapper" class="w-full h-full bg-stone-200 rounded-b-2xl overflow-auto relative touch-pan-x touch-pan-y">
             <div id="pdf-container" class="w-full flex flex-col items-center gap-3 p-2 min-h-full">
                 <div id="pdf-status" class="flex flex-col items-center gap-2 my-auto py-16">
                     <i class="fa-solid fa-spinner fa-spin text-2xl text-warm-dark"></i>
@@ -1061,16 +1061,6 @@ async function viewDocInline(url) {
 
     const pdfContainer = document.getElementById("pdf-container");
     const pinchWrapper = document.getElementById("pinch-wrapper");
-
-    // Enable Touch Pinch-To-Zoom and Dragging
-    if (window.PinchZoom) {
-        new PinchZoom(pinchWrapper, {
-            draggableUnzoomed: false,
-            minZoom: 1,
-            maxZoom: 4,
-            useScaling: true
-        });
-    }
 
     try {
         const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
@@ -1084,8 +1074,7 @@ async function viewDocInline(url) {
 
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
             const page = await pdf.getPage(pageNum);
-            // Render at high scale (2.5) so text remains crisp when pinch-zoomed on high-density mobile screens
-            const viewport = page.getViewport({ scale: 2.5 });
+            const viewport = page.getViewport({ scale: 2.0 });
 
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d");
@@ -1100,6 +1089,19 @@ async function viewDocInline(url) {
                 viewport: viewport
             }).promise;
         }
+
+        // Initialize PinchZoom AFTER all canvases are mounted in DOM
+        if (window.PinchZoom) {
+            setTimeout(() => {
+                new PinchZoom(pinchWrapper, {
+                    draggableUnzoomed: false,
+                    minZoom: 1,
+                    maxZoom: 4,
+                    useScaling: true
+                });
+            }, 100);
+        }
+
     } catch (err) {
         console.error("PDF Load Error:", err);
         pdfContainer.innerHTML = `
