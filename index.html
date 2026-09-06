@@ -1093,12 +1093,15 @@ async function openPdfWithLoader(url, btnId) {
             </div>`).join('');
     }
 
-    function renderCirculars() {
-        const homeCirculars = CIRCULARS.slice(0, 2);
-        document.getElementById('home-circulars-list').innerHTML = homeCirculars.map(item => `
-            <div onclick="openMozillaViewer('${item.url}')" class="bg-white p-3.5 rounded-2xl border border-stone-100 flex items-center justify-between cursor-pointer hover:shadow-sm transition">
+ function renderCirculars() {
+    const homeCirculars = CIRCULARS.slice(0, 2);
+    
+    document.getElementById('home-circulars-list').innerHTML = homeCirculars.map((item, index) => {
+        const itemContainerId = `home-circ-${index}`;
+        return `
+            <div id="${itemContainerId}" onclick="openPdfWithLoader('${item.url}', '${itemContainerId}')" class="bg-white p-3.5 rounded-2xl border border-stone-100 flex items-center justify-between cursor-pointer hover:shadow-sm transition">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-warm-subtle text-warm-dark flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-xl bg-warm-subtle text-warm-dark flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-file-pdf text-sm"></i>
                     </div>
                     <div>
@@ -1106,13 +1109,27 @@ async function openPdfWithLoader(url, btnId) {
                         <span class="text-[10px] text-warm-muted">${item.date}</span>
                     </div>
                 </div>
-                <i class="fa-solid fa-chevron-right text-stone-300 text-xs"></i>
-            </div>`).join('');
+                
+                <!-- Action / Loader Slot -->
+                <div class="action-slot flex items-center justify-center min-w-[24px]">
+                    <i class="fa-solid fa-chevron-right text-stone-300 text-xs default-icon"></i>
+                    
+                    <!-- 3-Ball Bounce Loader (Hidden by default) -->
+                    <div class="loader-balls hidden flex items-center gap-1">
+                        <div class="w-1.5 h-1.5 bg-warm-dark rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                        <div class="w-1.5 h-1.5 bg-warm-dark rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                        <div class="w-1.5 h-1.5 bg-warm-dark rounded-full animate-bounce"></div>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
 
-        document.getElementById('all-circulars-grid').innerHTML = CIRCULARS.map(item => `
-            <div onclick="openMozillaViewer('${item.url}')" class="bg-white p-3.5 rounded-2xl border border-stone-100 flex items-center justify-between cursor-pointer hover:shadow-sm transition">
+    document.getElementById('all-circulars-grid').innerHTML = CIRCULARS.map((item, index) => {
+        const itemContainerId = `all-circ-${index}`;
+        return `
+            <div id="${itemContainerId}" onclick="openPdfWithLoader('${item.url}', '${itemContainerId}')" class="bg-white p-3.5 rounded-2xl border border-stone-100 flex items-center justify-between cursor-pointer hover:shadow-sm transition">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-warm-subtle text-warm-dark flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-xl bg-warm-subtle text-warm-dark flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-file-pdf text-sm"></i>
                     </div>
                     <div>
@@ -1120,9 +1137,55 @@ async function openPdfWithLoader(url, btnId) {
                         <span class="text-[10px] text-warm-muted">${item.date}</span>
                     </div>
                 </div>
-                <i class="fa-solid fa-chevron-right text-stone-300 text-xs"></i>
-            </div>`).join('');
+                
+                <!-- Action / Loader Slot -->
+                <div class="action-slot flex items-center justify-center min-w-[24px]">
+                    <i class="fa-solid fa-chevron-right text-stone-300 text-xs default-icon"></i>
+                    
+                    <!-- 3-Ball Bounce Loader (Hidden by default) -->
+                    <div class="loader-balls hidden flex items-center gap-1">
+                        <div class="w-1.5 h-1.5 bg-warm-dark rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                        <div class="w-1.5 h-1.5 bg-warm-dark rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                        <div class="w-1.5 h-1.5 bg-warm-dark rounded-full animate-bounce"></div>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+// Function to handle loading state and pre-fetch PDF
+async function openPdfWithLoader(url, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container || container.getAttribute('data-loading') === 'true') return;
+
+    const defaultIcon = container.querySelector('.default-icon');
+    const loader = container.querySelector('.loader-balls');
+
+    // Prevent multi-clicks and show bouncing loader
+    container.setAttribute('data-loading', 'true');
+    container.classList.add('pointer-events-none', 'opacity-80');
+    if (defaultIcon) defaultIcon.classList.add('hidden');
+    if (loader) loader.classList.remove('hidden');
+
+    try {
+        const fetchUrl = typeof PROXY_URL !== 'undefined' ? `${PROXY_URL}${encodeURIComponent(url)}` : url;
+        const res = await fetch(fetchUrl);
+        const blob = await res.blob();
+        
+        // Open local Blob URL in a new tab once fully fetched
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+    } catch (e) {
+        // Fallback: Open original link if proxy/pre-fetch encounters CORS issues
+        window.open(url, '_blank');
+    } finally {
+        // Reset card state
+        container.removeAttribute('data-loading');
+        container.classList.remove('pointer-events-none', 'opacity-80');
+        if (defaultIcon) defaultIcon.classList.remove('hidden');
+        if (loader) loader.classList.add('hidden');
     }
+}
 
     function renderNotes() {
         const searchQuery = document.getElementById('notes-search').value.toLowerCase();
