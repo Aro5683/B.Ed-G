@@ -1040,7 +1040,7 @@ function viewDocInline(url) {
         noticeList.parentNode.insertBefore(container, noticeList.nextSibling);
     }
 
-    const iframeUrl = `https://aro5683.github.io/B.Ed-Viewer/web/viewer.html?file=${encodeURIComponent(url)}&embedded=true`;
+  const iframeUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
 
     // Make the container visible and populate embedded viewer inline
     container.classList.remove("hidden");
