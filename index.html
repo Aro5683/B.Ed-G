@@ -349,14 +349,89 @@
                 </div>
 
                 <!-- VIEW: CUSTOM -->
-                <div id="view-custom" class="hidden">
-                    <div class="p-8 text-center bg-white rounded-3xl border border-dashed border-stone-300 space-y-2 shadow-sm">
-                        <i class="fa-solid fa-code text-2xl text-warm-accent mb-1"></i>
-                        <p class="text-xs text-warm-dark font-bold">Custom Canvas Workspace</p>
-                        <p class="text-[11px] text-warm-muted">Paste custom HTML block into source code to render here.</p>
-                    </div>
-                </div>
+               <!-- VIEW: CUSTOM -->
+<div id="view-custom" class="hidden flex-1 flex-col space-y-4">
+    <div class="px-1">
+        <h3 class="text-sm font-bold text-warm-dark uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-shapes text-warm-accent"></i> Tools & Services
+        </h3>
+        <p class="text-[10px] text-warm-muted mt-0.5">Select a module to open calculator</p>
+    </div>
 
+    <!-- 3-Column x 4-Row Grid Container -->
+    <div class="grid grid-cols-3 grid-rows-4 gap-3 flex-1">
+        <!-- Box 1: B.Ed Percentage Calculator Icon -->
+        <button onclick="toggleModal('modal-calculator', true)" class="bg-white p-3 rounded-2xl border border-stone-100 shadow-sm flex flex-col items-center justify-center text-center space-y-2 hover:shadow-md transition active:scale-95">
+            <div class="w-10 h-10 rounded-xl bg-warm-subtle text-warm-dark flex items-center justify-center">
+                <i class="fa-solid fa-calculator text-lg text-warm-accent"></i>
+            </div>
+            <span class="text-[11px] font-bold text-warm-dark leading-tight">B.Ed Calculator</span>
+        </button>
+
+        <!-- Placeholders for Remaining Grid Slots -->
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+        <div class="bg-white/40 rounded-2xl border border-dashed border-stone-200 flex items-center justify-center text-stone-300"><i class="fa-solid fa-plus text-xs"></i></div>
+    </div>
+</div>
+
+<!-- MODAL: B.Ed PERCENTAGE CALCULATOR -->
+<div id="modal-calculator" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl space-y-4 max-h-[90vh] flex flex-col border border-stone-100">
+        
+        <!-- Header with Back / Close Action -->
+        <div class="flex items-center justify-between border-b border-stone-100 pb-3 flex-shrink-0">
+            <button onclick="toggleModal('modal-calculator', false)" class="w-8 h-8 bg-stone-100 hover:bg-stone-200 rounded-full flex items-center justify-center text-warm-dark transition">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+            </button>
+            <h3 class="text-xs font-bold text-warm-dark uppercase tracking-wider">B.Ed Percentage Calculator</h3>
+            <button onclick="toggleModal('modal-calculator', false)" class="text-warm-muted hover:text-warm-dark text-xs font-bold">
+                Close
+            </button>
+        </div>
+
+        <!-- Scrollable Form Container -->
+        <div class="overflow-y-auto space-y-3 flex-1 pr-1 hide-scrollbar">
+            <div id="subject-rows-container" class="space-y-2.5">
+                <!-- Initial Default Subject Input Row -->
+                <div class="subject-row grid grid-cols-12 gap-2 items-center bg-stone-50 p-2 rounded-2xl border border-stone-100">
+                    <input type="text" placeholder="Code (e.g. BD11)" class="col-span-5 modern-input px-3 py-2 rounded-xl text-xs font-semibold outline-none uppercase">
+                    <input type="number" placeholder="Marks" min="0" max="100" class="col-span-5 mark-input modern-input px-3 py-2 rounded-xl text-xs font-semibold outline-none">
+                    <button type="button" onclick="removeSubjectRow(this)" class="col-span-2 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Row Button -->
+            <button type="button" onclick="addSubjectRow()" class="w-full py-2.5 bg-warm-subtle hover:bg-amber-100 text-warm-dark font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition">
+                <i class="fa-solid fa-plus text-xs"></i> Add Subject
+            </button>
+        </div>
+
+        <!-- Action & Result Box -->
+        <div class="pt-2 border-t border-stone-100 space-y-3 flex-shrink-0">
+            <button type="button" onclick="calculateBedPercentage()" class="w-full py-3.5 bg-warm-dark hover:bg-stone-800 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-md transition">
+                Generate Percentage
+            </button>
+
+            <div id="calc-result-box" class="hidden p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-900 text-center space-y-0.5">
+                <p class="text-[10px] uppercase font-black text-emerald-700 tracking-wider">Overall Result</p>
+                <p id="calc-percentage-text" class="text-xl font-extrabold">0.00%</p>
+                <p id="calc-totals-text" class="text-[10px] text-emerald-800">Total Marks: 0 / 0</p>
+            </div>
+        </div>
+
+    </div>
+</div>
                 <!-- VIEW: DOWNLOADS -->
                 <div id="view-downloads" class="hidden space-y-4">
                     <div class="flex justify-between items-center">
@@ -1763,6 +1838,58 @@ async function triggerPwaInstall() {
             });
         }
     }
+
+    // Add a new Subject row dynamically
+function addSubjectRow() {
+    const container = document.getElementById('subject-rows-container');
+    const newRow = document.createElement('div');
+    newRow.className = 'subject-row grid grid-cols-12 gap-2 items-center bg-stone-50 p-2 rounded-2xl border border-stone-100';
+    newRow.innerHTML = `
+        <input type="text" placeholder="Code" class="col-span-5 modern-input px-3 py-2 rounded-xl text-xs font-semibold outline-none uppercase">
+        <input type="number" placeholder="Marks" min="0" max="100" class="col-span-5 mark-input modern-input px-3 py-2 rounded-xl text-xs font-semibold outline-none">
+        <button type="button" onclick="removeSubjectRow(this)" class="col-span-2 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-xs flex items-center justify-center">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(newRow);
+}
+
+// Remove a specific Subject row
+function removeSubjectRow(button) {
+    const container = document.getElementById('subject-rows-container');
+    if (container.children.length > 1) {
+        button.closest('.subject-row').remove();
+    } else {
+        alert('At least one subject field is required.');
+    }
+}
+
+// Compute Percentage based on subject rows
+function calculateBedPercentage() {
+    const markInputs = document.querySelectorAll('.mark-input');
+    let totalObtained = 0;
+    let validSubjectCount = 0;
+
+    markInputs.forEach(input => {
+        const val = parseFloat(input.value);
+        if (!isNaN(val) && val >= 0) {
+            totalObtained += val;
+            validSubjectCount++;
+        }
+    });
+
+    if (validSubjectCount === 0) {
+        alert('Please enter valid marks for at least one subject.');
+        return;
+    }
+
+    const totalMaxMarks = validSubjectCount * 100;
+    const percentage = ((totalObtained / totalMaxMarks) * 100).toFixed(2);
+
+    document.getElementById('calc-percentage-text').innerText = `${percentage}%`;
+    document.getElementById('calc-totals-text').innerText = `Total Marks: ${totalObtained} / ${totalMaxMarks}`;
+    document.getElementById('calc-result-box').classList.remove('hidden');
+}
 </script>
     <!-- Other app content and existing modals like #modal-admin -->
 
