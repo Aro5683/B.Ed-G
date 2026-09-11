@@ -1642,15 +1642,47 @@ function closeVideoModal() {
         }
     }
 
-    // Triggered when user clicks Install App button
-    async function triggerPwaInstall() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            await deferredPrompt.userChoice;
+   
+   // Function to render or restore the initial install button UI
+function resetPwaInstallState() {
+    const actionBox = document.getElementById('pwa-action-box');
+    if (!actionBox) return;
+
+    actionBox.innerHTML = `
+        <button id="pwa-install-btn" onclick="triggerPwaInstall()" class="w-full py-4 rounded-2xl bg-warm-dark hover:bg-stone-800 text-white font-black text-xs tracking-widest uppercase transition-all shadow-lg flex items-center justify-center gap-2">
+            <i class="fa-solid fa-download text-sm"></i>
+            <span>Install App</span>
+        </button>
+
+        <p id="pwa-instructions" class="text-[11px] text-warm-muted font-medium">
+            Click Install to enable full offline webapp features.
+        </p>
+    `;
+}
+
+// Updated Install Trigger handling user choice
+async function triggerPwaInstall() {
+    if (deferredPrompt) {
+        // Show native browser install prompt
+        deferredPrompt.prompt();
+        
+        // Wait for the user's decision
+        const choiceResult = await deferredPrompt.userChoice;
+        
+        if (choiceResult.outcome === 'accepted') {
+            // User accepted/clicked Install
             deferredPrompt = null;
+            start30SecondTimer();
+        } else {
+            // User clicked Cancel / Dismissed
+            if (installTimer) clearInterval(installTimer);
+            resetPwaInstallState();
         }
+    } else {
+        // Fallback if browser prompt isn't captured directly
         start30SecondTimer();
     }
+}
 
     // 30-Second Timer Flow
     function start30SecondTimer() {
